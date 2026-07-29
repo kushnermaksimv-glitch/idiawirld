@@ -234,6 +234,7 @@
             align-items: center;
             gap: 10px;
             border-bottom: 2px solid var(--border-color);
+            cursor: pointer;
         }
 
         .back-btn {
@@ -330,6 +331,31 @@
             font-style: italic;
             opacity: 0.7;
             margin-left: 4px;
+        }
+
+        .typing-indicator-row {
+            display: none;
+            align-self: flex-start;
+            margin-bottom: 5px;
+        }
+        .typing-indicator-row.active {
+            display: flex;
+        }
+        .typing-bubble {
+            background-color: var(--bg-msg-other);
+            color: var(--text-main);
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-style: italic;
+            opacity: 0.85;
+            animation: pulseTyping 1.5s infinite;
+        }
+
+        @keyframes pulseTyping {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
         }
 
         .reply-preview-bubble {
@@ -468,6 +494,39 @@
             font-weight: bold;
         }
 
+        /* --- МОДАЛЬНОЕ ОКНО "КТО В СЕТИ" --- */
+        .online-modal-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 50;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        .online-modal-overlay.active { display: flex; }
+        .online-modal-card {
+            background: var(--bg-container);
+            color: var(--text-main);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 320px;
+            padding: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 70vh;
+        }
+        .online-modal-list {
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 50vh;
+        }
+
         @media (max-width: 650px) {
             .chats-list-panel { width: 100%; }
             .chat-window { display: none; width: 100%; }
@@ -481,6 +540,17 @@
 
     <div class="messenger-container" id="messenger">
         <div class="drawer-overlay" id="drawerOverlay"></div>
+
+        <!-- МОДАЛКА ОНЛАЙН ИГРОКОВ -->
+        <div class="online-modal-overlay" id="onlineModalOverlay">
+            <div class="online-modal-card">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3 style="font-size:1.1rem;">🟢 Сейчас онлайн</h3>
+                    <button class="close-reply-btn" id="closeOnlineModalBtn">✕</button>
+                </div>
+                <div class="online-modal-list" id="onlineModalList"></div>
+            </div>
+        </div>
 
         <div class="sidebar-drawer" id="sidebarDrawer">
             <h3>⚙️ Настройки</h3>
@@ -545,16 +615,22 @@
         </div>
 
         <div class="chat-window">
-            <div class="chat-window-header">
+            <div class="chat-window-header" id="chatWindowHeader">
                 <button class="back-btn" id="backBtn">◄</button>
                 <div class="msg-avatar" id="activeChatAvatar">📢</div>
                 <div>
                     <h3 id="activeChatTitle" style="font-size:1rem;">Общий чат страны</h3>
-                    <div class="chat-status-text" id="activeChatStatus">офлайн</div>
+                    <div class="chat-status-text" id="activeChatStatus">⚪ офлайн</div>
                 </div>
             </div>
 
             <div class="chat-messages" id="chatMessages"></div>
+
+            <!-- ИНДИКАТОР ПЕЧАТИ В ЛЕНТЕ СООБЩЕНИЙ -->
+            <div class="typing-indicator-row" id="typingIndicatorRow">
+                <div class="msg-avatar" id="typingAvatar">✍️</div>
+                <div class="typing-bubble" id="typingText">кто-то печатает...</div>
+            </div>
 
             <div class="reply-bar" id="replyBar">
                 <div class="reply-bar-info">
@@ -599,7 +675,8 @@
         let currentAvatar = localStorage.getItem('idi_avatar') || '🐱';
         let activeChatId = 'global';
         let currentChatRef = null;
-        
+        let allUsersData = {}; // Кеш пользователей
+
         let selectedMsgData = null;
         let editingMsgId = null;
         let typingTimeout = null;
@@ -669,9 +746,13 @@
             loadUsersList();
             openChat('global', 'Общий чат страны', '📢');
             setupTypingEvents();
+
+            // Живое слежение за статусом для обновлений шапки
+            onValue(ref(database, 'status'), () => {
+                updateHeaderStatus();
+            });
         }
 
-        // --- ТОЧНЫЙ СТАТУС ОНЛАЙН / ОФЛАЙН ---
         function setupPresence() {
             const myStatusRef = ref(database, 'status/' + currentUser);
             const connectedRef = ref(database, '.info/connected');
@@ -700,6 +781,7 @@
             onChildAdded(ref(database, 'users'), (snapshot) => {
                 const username = snapshot.key;
                 const data = snapshot.val();
+                allUsersData[username] = data;
 
                 if (username !== currentUser && !document.getElementById('user-chat-' + username)) {
                     const chatItem = document.createElement('div');
@@ -724,7 +806,7 @@
                     chatsList.appendChild(chatItem);
                     renderAvatar(document.getElementById('avatar-col-' + username), data.avatar);
 
-                    // Исправленный отсмотр онлайн-статуса пользователя
+                    // Онлайн статус в списке чатов
                     onValue(ref(database, 'status/' + username), (snap) => {
                         const statusData = snap.val();
                         const dot = document.getElementById('dot-' + username);
@@ -734,12 +816,9 @@
                             if (isOnline) dot.classList.add('active');
                             else dot.classList.remove('active');
                         }
-                        if (activeChatId === username) {
-                            updateHeaderStatus(username, false, [], isOnline);
-                        }
                     });
 
-                    // Печатает... в ЛС
+                    // Печатает... в боковом меню ЛС
                     onValue(ref(database, `typing/${username}/${username}`), (snap) => {
                         const isTyping = snap.val();
                         const sub = document.getElementById('sub-' + username);
@@ -748,12 +827,13 @@
                             sub.style.color = isTyping ? '#ffd700' : 'inherit';
                         }
                         if (activeChatId === username) {
-                            updateHeaderStatus(username, isTyping);
+                            toggleInMessageTyping(username, isTyping);
                         }
                     });
                 }
             });
 
+            // Печатает... в боковом меню Общего чата
             onValue(ref(database, `typing/global`), (snap) => {
                 const typers = snap.val() || {};
                 const activeTypers = Object.keys(typers).filter(u => u !== currentUser && typers[u]);
@@ -767,46 +847,52 @@
                         sub.style.color = 'inherit';
                     }
                 }
-                if (activeChatId === 'global') updateHeaderStatus('global', activeTypers.length > 0, activeTypers);
+                if (activeChatId === 'global') {
+                    toggleInMessageTyping(activeTypers.join(', '), activeTypers.length > 0);
+                }
             });
         }
 
-        function updateHeaderStatus(chatId, isTyping = false, typersList = [], forceOnlineState = null) {
-            const statusEl = document.getElementById('activeChatStatus');
-            if (chatId === 'global') {
-                if (isTyping) statusEl.innerText = `✍️ ${typersList.join(', ')} печатает...`;
-                else statusEl.innerText = 'общественный чат';
-                statusEl.style.color = 'inherit';
-                return;
-            }
+        // --- ОТОБРАЖЕНИЕ "ПЕЧАТАЕТ..." В ЛЕНТЕ СООБЩЕНИЙ ВНИЗУ ---
+        function toggleInMessageTyping(authorName, isTyping) {
+            const typingRow = document.getElementById('typingIndicatorRow');
+            const typingAvatar = document.getElementById('typingAvatar');
+            const typingText = document.getElementById('typingText');
 
             if (isTyping) {
-                statusEl.innerText = '✍️ печатает...';
-                statusEl.style.color = '#ffd700';
-                return;
+                const userAvatar = allUsersData[authorName] ? allUsersData[authorName].avatar : '✍️';
+                renderAvatar(typingAvatar, userAvatar);
+                typingText.innerText = `${authorName} печатает...`;
+                typingRow.classList.add('active');
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            } else {
+                typingRow.classList.remove('active');
             }
+        }
 
-            if (forceOnlineState !== null) {
-                if (forceOnlineState) {
-                    statusEl.innerText = '🟢 онлайн';
+        // --- ТОЧНЫЙ СТАТУС В ШАПКЕ ---
+        function updateHeaderStatus() {
+            const statusEl = document.getElementById('activeChatStatus');
+
+            if (activeChatId === 'global') {
+                onValue(ref(database, 'status'), (snap) => {
+                    const statuses = snap.val() || {};
+                    const onlineCount = Object.values(statuses).filter(s => s.state === 'online').length;
+                    statusEl.innerText = `🟢 ${onlineCount} в сети (нажми на чат)`;
                     statusEl.style.color = '#2ec4b6';
-                } else {
-                    statusEl.innerText = '⚪ офлайн';
-                    statusEl.style.color = 'inherit';
-                }
-                return;
+                }, { onlyOnce: true });
+            } else {
+                onValue(ref(database, 'status/' + activeChatId), (snap) => {
+                    const data = snap.val();
+                    if (data && data.state === 'online') {
+                        statusEl.innerText = '🟢 онлайн';
+                        statusEl.style.color = '#2ec4b6';
+                    } else {
+                        statusEl.innerText = '⚪ офлайн';
+                        statusEl.style.color = 'inherit';
+                    }
+                }, { onlyOnce: true });
             }
-
-            onValue(ref(database, 'status/' + chatId), (snap) => {
-                const data = snap.val();
-                if (data && data.state === 'online') {
-                    statusEl.innerText = '🟢 онлайн';
-                    statusEl.style.color = '#2ec4b6';
-                } else {
-                    statusEl.innerText = '⚪ офлайн';
-                    statusEl.style.color = 'inherit';
-                }
-            }, { onlyOnce: true });
         }
 
         function openChat(chatId, title, avatar) {
@@ -817,13 +903,11 @@
             chatMessages.innerHTML = '';
             messenger.classList.add('open-chat');
             cancelReply();
+            toggleInMessageTyping('', false);
 
-            // ОТКЛЮЧАЕМ СТАРЫЙ СЛУШАТЕЛЬ ДЛЯ ИЗБЕЖАНИЯ ДУБЛИРОВАНИЯ
-            if (currentChatRef) {
-                off(currentChatRef);
-            }
+            if (currentChatRef) off(currentChatRef);
 
-            updateHeaderStatus(chatId);
+            updateHeaderStatus();
 
             let chatDbPath = 'global_chat';
             if (chatId !== 'global') {
@@ -833,9 +917,7 @@
 
             currentChatRef = ref(database, chatDbPath);
 
-            // Слушаем сообщения
             onChildAdded(currentChatRef, (snapshot) => {
-                // ПРОВЕРКА: Если сообщение уже есть в DOM, не добавляем его заново
                 if (!document.getElementById('msg-' + snapshot.key)) {
                     renderSingleMessage(snapshot.val(), snapshot.key);
                 }
@@ -924,6 +1006,51 @@
             chatMessages.appendChild(row);
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
+
+        // --- КЛИК ПО ШАПКЕ ЧАТА (ПОКАЗАТЬ КТО ОНЛАЙН) ---
+        const onlineModalOverlay = document.getElementById('onlineModalOverlay');
+        const onlineModalList = document.getElementById('onlineModalList');
+
+        document.getElementById('chatWindowHeader').addEventListener('click', (e) => {
+            if (e.target.classList.contains('back-btn')) return;
+
+            onlineModalList.innerHTML = '';
+            onValue(ref(database, 'status'), (snap) => {
+                const statuses = snap.val() || {};
+                let count = 0;
+
+                Object.keys(statuses).forEach(user => {
+                    if (statuses[user].state === 'online') {
+                        count++;
+                        const userAvatar = allUsersData[user] ? allUsersData[user].avatar : '🐱';
+
+                        const item = document.createElement('div');
+                        item.style.cssText = "display:flex; align-items:center; gap:10px; padding:6px; border-bottom:1px solid var(--border-color);";
+                        
+                        const avContainer = document.createElement('div');
+                        avContainer.className = "msg-avatar";
+                        renderAvatar(avContainer, userAvatar);
+
+                        const nameEl = document.createElement('div');
+                        nameEl.style.fontWeight = 'bold';
+                        nameEl.innerText = user + (user === currentUser ? ' (Вы)' : '');
+
+                        item.appendChild(avContainer);
+                        item.appendChild(nameEl);
+                        onlineModalList.appendChild(item);
+                    }
+                });
+
+                if (count === 0) {
+                    onlineModalList.innerText = 'Никого нет в сети';
+                }
+                onlineModalOverlay.classList.add('active');
+            }, { onlyOnce: true });
+        });
+
+        document.getElementById('closeOnlineModalBtn').addEventListener('click', () => {
+            onlineModalOverlay.classList.remove('active');
+        });
 
         function attachLongPressMenu(element, msgData) {
             let pressTimer = null;
