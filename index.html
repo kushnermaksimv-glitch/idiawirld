@@ -558,7 +558,7 @@
         let activeChatId = 'global';
         let currentChatRef = null;
         let selectedReplyMsg = null;
-        let gameToRepeat = null; // Храним эмодзи для повтора (🎰 или ⚽)
+        let gameToRepeat = null;
 
         let playedGames = JSON.parse(localStorage.getItem('idi_played_games') || '[]');
 
@@ -712,7 +712,9 @@
                     </div>
                 `;
                 textContent = '';
-                setTimeout(() => handleCasinoLogic(gameId, data.gameResult, msgId, hasPlayed), 100);
+                // Совместимость со старым именем свойства casinoResult
+                const gameResult = data.gameResult || data.casinoResult; 
+                setTimeout(() => handleCasinoLogic(gameId, gameResult, msgId, hasPlayed), 100);
             }
 
             // 2. ФУТБОЛ ⚽
@@ -739,7 +741,6 @@
             row.appendChild(avatarDiv);
             row.appendChild(bubble);
 
-            // Клик на игру вызывает меню с кнопкой "Отправить ещё раз"
             if (data.text.trim() === '🎰' || data.text.trim() === '⚽') {
                 setTimeout(() => {
                     const box = document.getElementById('box-game-' + msgId);
@@ -762,7 +763,18 @@
         function handleCasinoLogic(id, finalResult, msgId, hasPlayed) {
             const reelsEl = document.getElementById(id);
             const statusEl = document.getElementById(id + '-status');
-            if (!reelsEl || !finalResult) return;
+            if (!reelsEl) return;
+
+            const symbols = ['🍋', '🍒', '7️⃣', '🍇'];
+
+            // ЗАЩИТА ДЛЯ СТАРЫХ СООБЩЕНИЙ
+            if (!finalResult) {
+                finalResult = [
+                    symbols[Math.floor(Math.random() * 4)],
+                    symbols[Math.floor(Math.random() * 4)],
+                    symbols[Math.floor(Math.random() * 4)]
+                ];
+            }
 
             const updateStatus = (res) => {
                 if (res[0] === '7️⃣' && res[1] === '7️⃣' && res[2] === '7️⃣') statusEl.innerText = "💥 ДЖЕКПОТ! 777 💥";
@@ -777,7 +789,6 @@
             }
 
             statusEl.innerText = "Крутим...";
-            const symbols = ['🍋', '🍒', '7️⃣', '🍇'];
             let ticks = 0;
 
             const interval = setInterval(() => {
@@ -796,7 +807,12 @@
         function handleFootballLogic(id, finalResult, msgId, hasPlayed) {
             const displayEl = document.getElementById(id);
             const statusEl = document.getElementById(id + '-status');
-            if (!displayEl || !finalResult) return;
+            if (!displayEl) return;
+
+            // ЗАЩИТА ДЛЯ СТАРЫХ СООБЩЕНИЙ
+            if (!finalResult) {
+                finalResult = { isGoal: Math.random() > 0.5 };
+            }
 
             const updateStatus = (isGoal) => {
                 statusEl.innerText = isGoal ? "🎯 ГОЛ!!!" : "❌ СЕЙВ ВРАТАРЯ!";
@@ -830,7 +846,6 @@
             localStorage.setItem('idi_played_games', JSON.stringify(playedGames));
         }
 
-        // Показ кнопки "Отправить ещё раз"
         function showRepeatMenu(emoji, author) {
             gameToRepeat = emoji;
             selectedReplyMsg = null;
@@ -913,7 +928,7 @@
                 time: time
             };
 
-            // Генерация результатов
+            // Генерация и фиксация результатов
             if (text === '🎰') {
                 const symbols = ['🍋', '🍒', '7️⃣', '🍇'];
                 msgObject.gameResult = [
