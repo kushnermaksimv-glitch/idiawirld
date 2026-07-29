@@ -34,6 +34,7 @@
             flex-direction: column;
             overflow: hidden;
             border: 2px solid #b8860b;
+            position: relative;
         }
 
         .chat-header {
@@ -41,18 +42,79 @@
             color: #f3e5ab;
             padding: 15px 20px;
             border-bottom: 2px solid #b8860b;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .chat-header h2 {
-            font-size: 1.2rem;
-            margin-bottom: 3px;
+            font-size: 1.1rem;
         }
 
-        .chat-header p {
+        .logout-btn {
+            background: #8b5a2b;
+            color: #fff;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 6px;
+            cursor: pointer;
             font-size: 0.8rem;
-            color: #d1a374;
         }
 
+        /* Экран авторизации */
+        .auth-screen {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #fff8f0;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            gap: 15px;
+        }
+
+        .auth-screen h2 {
+            color: #573a23;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .auth-input {
+            width: 100%;
+            max-width: 300px;
+            padding: 12px;
+            border: 1px solid #c8a27c;
+            border-radius: 8px;
+            outline: none;
+        }
+
+        .auth-btn-group {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .auth-btn {
+            flex: 1;
+            padding: 12px;
+            background-color: #573a23;
+            color: #f3e5ab;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .auth-error {
+            color: #b30000;
+            font-size: 0.85rem;
+            height: 15px;
+        }
+
+        /* Область сообщений */
         .chat-messages {
             flex: 1;
             padding: 20px;
@@ -75,11 +137,21 @@
             align-self: flex-start;
         }
 
+        .message.my-message {
+            background-color: #573a23;
+            color: #ffffff;
+            align-self: flex-end;
+        }
+
         .message-author {
             font-size: 0.75rem;
             font-weight: bold;
             margin-bottom: 3px;
             color: #8b5a2b;
+        }
+
+        .message.my-message .message-author {
+            color: #f3e5ab;
         }
 
         .message-time {
@@ -89,6 +161,7 @@
             margin-top: 4px;
         }
 
+        /* Форма ввода */
         .chat-input-area {
             display: flex;
             padding: 15px;
@@ -98,48 +171,50 @@
         }
 
         .chat-input-area input {
-            padding: 10px;
+            flex: 1;
+            padding: 12px;
             border: 1px solid #c8a27c;
             border-radius: 8px;
             outline: none;
-        }
-
-        .chat-input-area input[type="text"] {
-            flex: 1;
-        }
-
-        #usernameInput {
-            width: 110px;
-            font-weight: bold;
         }
 
         .chat-input-area button {
             background-color: #573a23;
             color: #f3e5ab;
             border: none;
-            padding: 10px 18px;
+            padding: 12px 20px;
             border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
-        }
-
-        .chat-input-area button:hover {
-            background-color: #3c2818;
         }
     </style>
 </head>
 <body>
 
     <div class="chat-container">
-        <div class="chat-header">
-            <h2>🐾 Чат «Мир Идиаканта»</h2>
-            <p>Онлайн-связь жителей страны</p>
+        <!-- Окно Входа / Регистрации -->
+        <div class="auth-screen" id="authScreen">
+            <h2>🐾 Мир Идиаканта</h2>
+            <input type="text" id="authUsername" class="auth-input" placeholder="Логин (Имя)" autocomplete="off">
+            <input type="password" id="authPassword" class="auth-input" placeholder="Пароль">
+            <div class="auth-error" id="authError"></div>
+            <div class="auth-btn-group">
+                <button class="auth-btn" id="loginBtn">Войти</button>
+                <button class="auth-btn" id="regBtn" style="background-color: #8b5a2b;">Регистрация</button>
+            </div>
         </div>
 
+        <!-- Шапка -->
+        <div class="chat-header">
+            <h2 id="headerTitle">🐾 Чат Идиаканта</h2>
+            <button class="logout-btn" id="logoutBtn">Выйти</button>
+        </div>
+
+        <!-- Сообщения -->
         <div class="chat-messages" id="chatMessages"></div>
 
+        <!-- Поле ввода -->
         <form class="chat-input-area" id="chatForm">
-            <input type="text" id="usernameInput" placeholder="Имя..." value="Житель" required>
             <input type="text" id="userInput" placeholder="Напишите сообщение..." autocomplete="off" required>
             <button type="submit">Отправить</button>
         </form>
@@ -148,9 +223,9 @@
     <!-- Модули Firebase -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, push, onChildAdded, get, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // Ваша конфигурация
+        // Конфигурация Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyByKktnwPbg1zBU4wYR8hceDc57BR0Y4Zo",
             authDomain: "worldidiakant.firebaseapp.com",
@@ -162,28 +237,102 @@
             measurementId: "G-FPZMTSWPDQ"
         };
 
-        // Инициализация Firebase
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
         const messagesRef = ref(database, 'messages');
+        const usersRef = ref(database, 'users');
 
+        // Элементы UI
+        const authScreen = document.getElementById('authScreen');
+        const authUsername = document.getElementById('authUsername');
+        const authPassword = document.getElementById('authPassword');
+        const authError = document.getElementById('authError');
+        const loginBtn = document.getElementById('loginBtn');
+        const regBtn = document.getElementById('regBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const headerTitle = document.getElementById('headerTitle');
         const chatMessages = document.getElementById('chatMessages');
         const chatForm = document.getElementById('chatForm');
         const userInput = document.getElementById('userInput');
-        const usernameInput = document.getElementById('usernameInput');
 
-        // Отправка сообщения в Firebase
+        let currentUser = localStorage.getItem('idiakant_user');
+
+        // Авто-вход, если имя уже сохраненно
+        if (currentUser) {
+            authScreen.style.display = 'none';
+            headerTitle.innerText = `🐾 Чат: ${currentUser}`;
+        }
+
+        // Регистрация
+        regBtn.addEventListener('click', async () => {
+            const username = authUsername.value.trim();
+            const password = authPassword.value.trim();
+
+            if (!username || !password) {
+                authError.innerText = 'Заполните оба поля!';
+                return;
+            }
+
+            const snapshot = await get(child(usersRef, username));
+            if (snapshot.exists()) {
+                authError.innerText = 'Пользователь с таким логином уже есть!';
+            } else {
+                // Сохраняем нового пользователя в Firebase
+                const dbRef = ref(database, 'users/' + username);
+                push(dbRef, { password: password });
+                loginSuccess(username);
+            }
+        });
+
+        // Вход
+        loginBtn.addEventListener('click', async () => {
+            const username = authUsername.value.trim();
+            const password = authPassword.value.trim();
+
+            if (!username || !password) {
+                authError.innerText = 'Заполните оба поля!';
+                return;
+            }
+
+            const snapshot = await get(child(usersRef, username));
+            if (snapshot.exists()) {
+                const userData = snapshot.val();
+                const passKey = Object.keys(userData)[0];
+                if (userData[passKey].password === password) {
+                    loginSuccess(username);
+                } else {
+                    authError.innerText = 'Неверный пароль!';
+                }
+            } else {
+                authError.innerText = 'Пользователь не найден!';
+            }
+        });
+
+        function loginSuccess(username) {
+            currentUser = username;
+            localStorage.setItem('idiakant_user', username);
+            authScreen.style.display = 'none';
+            headerTitle.innerText = `🐾 Чат: ${username}`;
+            authError.innerText = '';
+        }
+
+        // Выход
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('idiakant_user');
+            location.reload();
+        });
+
+        // Отправка сообщений
         chatForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const text = userInput.value.trim();
-            const author = usernameInput.value.trim() || 'Аноним';
 
-            if (text) {
+            if (text && currentUser) {
                 const now = new Date();
                 const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
                 push(messagesRef, {
-                    author: author,
+                    author: currentUser,
                     text: text,
                     time: timeStr
                 });
@@ -192,12 +341,17 @@
             }
         });
 
-        // Получение сообщений из Firebase в режиме реального времени
+        // Слушатель новых сообщений
         onChildAdded(messagesRef, (snapshot) => {
             const data = snapshot.val();
             
             const messageDiv = document.createElement('div');
             messageDiv.classList.add('message');
+
+            if (data.author === currentUser) {
+                messageDiv.classList.add('my-message');
+            }
+
             messageDiv.innerHTML = `
                 <div class="message-author">${data.author}</div>
                 <div>${data.text}</div>
