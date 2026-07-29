@@ -5,6 +5,76 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Мессенджер «Мир Идиаканта»</title>
     <style>
+        /* --- Переменные тем оформления --- */
+        :root {
+            --bg-body: #2c1d11;
+            --bg-container: #fff8f0;
+            --bg-chats-list: #eae0d5;
+            --bg-chat-active: #d1a374;
+            --bg-window: #fdfaf6;
+            --bg-header: linear-gradient(135deg, #2c1d11, #573a23);
+            --bg-msg-other: #eae0d5;
+            --bg-msg-my: #573a23;
+            --text-main: #332211;
+            --text-my: #ffffff;
+            --text-header: #f3e5ab;
+            --border-color: #b8860b;
+            --font-size-msg: 0.9rem;
+        }
+
+        /* Темная тема */
+        body.theme-dark {
+            --bg-body: #121212;
+            --bg-container: #1e1e1e;
+            --bg-chats-list: #252525;
+            --bg-chat-active: #383838;
+            --bg-window: #181818;
+            --bg-header: linear-gradient(135deg, #2a2a2a, #1f1f1f);
+            --bg-msg-other: #2d2d2d;
+            --bg-msg-my: #4a3b52;
+            --text-main: #e0e0e0;
+            --text-my: #ffffff;
+            --text-header: #bb86fc;
+            --border-color: #333333;
+        }
+
+        /* Светлая тема */
+        body.theme-light {
+            --bg-body: #e0e6ed;
+            --bg-container: #ffffff;
+            --bg-chats-list: #f0f4f8;
+            --bg-chat-active: #d9e2ec;
+            --bg-window: #ffffff;
+            --bg-header: linear-gradient(135deg, #334e68, #243b53);
+            --bg-msg-other: #f0f4f8;
+            --bg-msg-my: #334e68;
+            --text-main: #102a43;
+            --text-my: #ffffff;
+            --text-header: #f0f4f8;
+            --border-color: #bccadc;
+        }
+
+        /* Неоновая тема */
+        body.theme-neon {
+            --bg-body: #050515;
+            --bg-container: #0a0a23;
+            --bg-chats-list: #101035;
+            --bg-chat-active: #1a1a4a;
+            --bg-window: #070719;
+            --bg-header: linear-gradient(135deg, #12002b, #28004d);
+            --bg-msg-other: #16163d;
+            --bg-msg-my: #0088cc;
+            --text-main: #00ffcc;
+            --text-my: #ffffff;
+            --text-header: #ff007f;
+            --border-color: #ff007f;
+        }
+
+        /* --- Размеры шрифтов --- */
+        body.font-small { --font-size-msg: 0.8rem; }
+        body.font-medium { --font-size-msg: 0.95rem; }
+        body.font-large { --font-size-msg: 1.1rem; }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -13,42 +83,45 @@
         }
 
         body {
-            background-color: #2c1d11;
+            background-color: var(--bg-body);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             padding: 10px;
+            transition: background 0.3s;
         }
 
         .messenger-container {
             width: 100%;
             max-width: 900px;
             height: 90vh;
-            background-color: #fff8f0;
+            background-color: var(--bg-container);
             border-radius: 12px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
             display: flex;
             overflow: hidden;
-            border: 2px solid #b8860b;
+            border: 2px solid var(--border-color);
             position: relative;
         }
 
-        /* --- БОКОВАЯ ПАНЕЛЬ С НОСТРОЙКАМИ (Drawer) --- */
+        /* --- БОКОВАЯ ПАНЕЛЬ С НАСТРОЙКАМИ (Drawer) --- */
         .sidebar-drawer {
             position: absolute;
-            top: 0; left: -280px;
-            width: 280px;
+            top: 0; left: -300px;
+            width: 300px;
             height: 100%;
-            background-color: #fff8f0;
+            background-color: var(--bg-container);
+            color: var(--text-main);
             z-index: 30;
-            border-right: 2px solid #b8860b;
+            border-right: 2px solid var(--border-color);
             box-shadow: 5px 0 15px rgba(0,0,0,0.3);
             transition: left 0.3s ease;
             display: flex;
             flex-direction: column;
             padding: 20px;
-            gap: 15px;
+            gap: 12px;
+            overflow-y: auto;
         }
 
         .sidebar-drawer.active { left: 0; }
@@ -63,18 +136,40 @@
 
         .drawer-overlay.active { display: block; }
 
+        .setting-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .setting-group label {
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .setting-select {
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-window);
+            color: var(--text-main);
+            outline: none;
+        }
+
         /* --- ЛЕВАЯ КОЛОНКА (СПИСОК ЧАТОВ) --- */
         .chats-list-panel {
             width: 320px;
-            background-color: #eae0d5;
-            border-right: 1px solid #c8a27c;
+            background-color: var(--bg-chats-list);
+            border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
         }
 
         .chats-header {
-            background: #573a23;
-            color: #f3e5ab;
+            background: var(--bg-header);
+            color: var(--text-header);
             padding: 12px 15px;
             display: flex;
             align-items: center;
@@ -84,7 +179,7 @@
         .menu-btn {
             background: none;
             border: none;
-            color: #f3e5ab;
+            color: var(--text-header);
             font-size: 1.3rem;
             cursor: pointer;
         }
@@ -95,25 +190,25 @@
             gap: 12px;
             padding: 12px 15px;
             cursor: pointer;
-            border-bottom: 1px solid #d1a374;
+            border-bottom: 1px solid var(--border-color);
             transition: background 0.2s;
         }
 
         .chat-item:hover, .chat-item.active {
-            background-color: #d1a374;
+            background-color: var(--bg-chat-active);
         }
 
         .chat-item-avatar {
             width: 45px;
             height: 45px;
             border-radius: 50%;
-            background: #573a23;
+            background: var(--bg-msg-my);
             color: #fff;
             display: flex;
             justify-content: center;
             align-items: center;
             font-size: 1.2rem;
-            border: 1px solid #b8860b;
+            border: 1px solid var(--border-color);
             flex-shrink: 0;
             overflow: hidden;
         }
@@ -125,13 +220,14 @@
 
         .chat-item-title {
             font-weight: bold;
-            color: #2c1d11;
+            color: var(--text-main);
             font-size: 0.95rem;
         }
 
         .chat-item-sub {
             font-size: 0.8rem;
-            color: #666;
+            opacity: 0.7;
+            color: var(--text-main);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -142,24 +238,24 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            background-color: #fdfaf6;
+            background-color: var(--bg-window);
         }
 
         .chat-window-header {
-            background: linear-gradient(135deg, #2c1d11, #573a23);
-            color: #f3e5ab;
+            background: var(--bg-header);
+            color: var(--text-header);
             padding: 12px 15px;
             display: flex;
             align-items: center;
             gap: 10px;
-            border-bottom: 2px solid #b8860b;
+            border-bottom: 2px solid var(--border-color);
         }
 
         .back-btn {
             display: none;
             background: none;
             border: none;
-            color: #f3e5ab;
+            color: var(--text-header);
             font-size: 1.2rem;
             cursor: pointer;
         }
@@ -188,38 +284,36 @@
             width: 32px;
             height: 32px;
             border-radius: 50%;
-            background: #d1a374;
+            background: var(--bg-chat-active);
             display: flex;
             justify-content: center;
             align-items: center;
             font-size: 0.9rem;
             flex-shrink: 0;
             overflow: hidden;
-            border: 1px solid #b8860b;
+            border: 1px solid var(--border-color);
         }
 
         .msg-bubble {
-            background-color: #eae0d5;
-            color: #332211;
+            background-color: var(--bg-msg-other);
+            color: var(--text-main);
             padding: 8px 12px;
             border-radius: 12px;
-            font-size: 0.9rem;
+            font-size: var(--font-size-msg);
             word-break: break-word;
         }
 
         .my-msg .msg-bubble {
-            background-color: #573a23;
-            color: #ffffff;
+            background-color: var(--bg-msg-my);
+            color: var(--text-my);
         }
 
         .msg-author {
             font-size: 0.75rem;
             font-weight: bold;
-            color: #8b5a2b;
+            opacity: 0.8;
             margin-bottom: 2px;
         }
-
-        .my-msg .msg-author { color: #f3e5ab; }
 
         .msg-time {
             font-size: 0.65rem;
@@ -231,22 +325,24 @@
         .chat-input-area {
             display: flex;
             padding: 10px;
-            background-color: #fff8f0;
-            border-top: 1px solid #e5c29f;
+            background-color: var(--bg-container);
+            border-top: 1px solid var(--border-color);
             gap: 8px;
         }
 
         .chat-input-area input {
             flex: 1;
             padding: 10px;
-            border: 1px solid #c8a27c;
+            border: 1px solid var(--border-color);
             border-radius: 20px;
+            background: var(--bg-window);
+            color: var(--text-main);
             outline: none;
         }
 
         .chat-input-area button {
-            background-color: #573a23;
-            color: #f3e5ab;
+            background: var(--bg-header);
+            color: var(--text-header);
             border: none;
             padding: 10px 18px;
             border-radius: 20px;
@@ -258,7 +354,8 @@
         .auth-screen {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #fff8f0;
+            background-color: var(--bg-container);
+            color: var(--text-main);
             z-index: 40;
             display: flex;
             flex-direction: column;
@@ -272,8 +369,10 @@
             width: 100%;
             max-width: 280px;
             padding: 10px;
-            border: 1px solid #c8a27c;
+            border: 1px solid var(--border-color);
             border-radius: 8px;
+            background: var(--bg-window);
+            color: var(--text-main);
             outline: none;
         }
 
@@ -281,8 +380,8 @@
             width: 100%;
             max-width: 280px;
             padding: 10px;
-            background-color: #573a23;
-            color: #f3e5ab;
+            background: var(--bg-header);
+            color: var(--text-header);
             border: none;
             border-radius: 8px;
             cursor: pointer;
@@ -299,7 +398,7 @@
         }
     </style>
 </head>
-<body>
+<body class="theme-classic font-medium">
 
     <div class="messenger-container" id="messenger">
         
@@ -308,19 +407,44 @@
 
         <!-- Выезжающее левое меню -->
         <div class="sidebar-drawer" id="sidebarDrawer">
-            <h3 style="color:#573a23;">⚙️ Настройки</h3>
-            <div style="text-align: center; margin: 10px 0;">
-                <div id="drawerAvatar" class="chat-item-avatar" style="width:70px; height:70px; margin:0 auto; font-size:2rem;">🐱</div>
-                <h4 id="drawerUsername" style="color:#573a23; margin-top:5px;">Имя</h4>
+            <h3>⚙️ Настройки</h3>
+            
+            <div style="text-align: center; margin: 5px 0;">
+                <div id="drawerAvatar" class="chat-item-avatar" style="width:65px; height:65px; margin:0 auto; font-size:1.8rem;">🐱</div>
+                <h4 id="drawerUsername" style="margin-top:5px;">Имя</h4>
             </div>
-            <label style="font-size:0.8rem; color:#573a23;">Новый аватар (Ссылка / Эмодзи):</label>
-            <input type="text" id="setAvatarInput" class="auth-input" placeholder="например 😎">
-            <button class="auth-btn" id="saveAvatarBtn">Сохранить</button>
+
+            <div class="setting-group">
+                <label>Аватар (Ссылка / Эмодзи):</label>
+                <input type="text" id="setAvatarInput" class="auth-input" placeholder="например 😎">
+                <button class="auth-btn" id="saveAvatarBtn" style="margin-top:5px;">Сохранить фото</button>
+            </div>
+
+            <!-- НАСТРОЙКИ ТЕМ И ШРИФТОВ -->
+            <div class="setting-group">
+                <label>Тема оформления:</label>
+                <select id="themeSelect" class="setting-select">
+                    <option value="theme-classic">🪵 Классическая</option>
+                    <option value="theme-dark">🌙 Тёмная</option>
+                    <option value="theme-light">☀️ Светлая</option>
+                    <option value="theme-neon">⚡ Неоновая</option>
+                </select>
+            </div>
+
+            <div class="setting-group">
+                <label>Размер текста:</label>
+                <select id="fontSelect" class="setting-select">
+                    <option value="font-small">Мелкий</option>
+                    <option value="font-medium" selected>Средний</option>
+                    <option value="font-large">Крупный</option>
+                </select>
+            </div>
+
             <div style="flex:1;"></div>
-            <button class="auth-btn" id="logoutBtn" style="background:#8b5a2b;">Выйти</button>
+            <button class="auth-btn" id="logoutBtn" style="opacity: 0.8;">Выйти из аккаунта</button>
         </div>
 
-        <!-- Авторизация -->
+        <!-- Экран авторизации -->
         <div class="auth-screen" id="authScreen">
             <h2>🐾 Мир Идиаканта</h2>
             <input type="text" id="authUsername" class="auth-input" placeholder="Логин (Никнейм)">
@@ -337,7 +461,7 @@
             </div>
             
             <div id="chatsList" style="overflow-y: auto; flex:1;">
-                <!-- Общий чат зафиксирован вверху -->
+                <!-- Общий чат -->
                 <div class="chat-item active" id="globalChatItem">
                     <div class="chat-item-avatar">📢</div>
                     <div class="chat-item-info">
@@ -345,7 +469,6 @@
                         <div class="chat-item-sub">Все жители Идиаканта</div>
                     </div>
                 </div>
-                <!-- Сюда будут подгружаться ЛС -->
             </div>
         </div>
 
@@ -371,7 +494,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, push, onChildAdded, set, get, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, push, onChildAdded, set, off } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyByKktnwPbg1zBU4wYR8hceDc57BR0Y4Zo",
@@ -389,14 +512,37 @@
 
         let currentUser = localStorage.getItem('idi_user') || '';
         let currentAvatar = localStorage.getItem('idi_avatar') || '🐱';
-        let activeChatId = 'global'; // 'global' или Имя собеседника в ЛС
+        let activeChatId = 'global';
+        let currentChatRef = null; // Отслеживание текущего слушателя
 
         const authScreen = document.getElementById('authScreen');
         const messenger = document.getElementById('messenger');
         const chatMessages = document.getElementById('chatMessages');
         const chatsList = document.getElementById('chatsList');
 
-        // Вспомогательная функция отрисовки аватарок
+        // Применение темы и шрифтов
+        const themeSelect = document.getElementById('themeSelect');
+        const fontSelect = document.getElementById('fontSelect');
+
+        const savedTheme = localStorage.getItem('idi_theme') || 'theme-classic';
+        const savedFont = localStorage.getItem('idi_font') || 'font-medium';
+
+        document.body.className = `${savedTheme} ${savedFont}`;
+        themeSelect.value = savedTheme;
+        fontSelect.value = savedFont;
+
+        themeSelect.addEventListener('change', (e) => {
+            const newTheme = e.target.value;
+            document.body.className = `${newTheme} ${fontSelect.value}`;
+            localStorage.setItem('idi_theme', newTheme);
+        });
+
+        fontSelect.addEventListener('change', (e) => {
+            const newFont = e.target.value;
+            document.body.className = `${themeSelect.value} ${newFont}`;
+            localStorage.setItem('idi_font', newFont);
+        });
+
         function renderAvatar(element, avatarData) {
             if (avatarData && (avatarData.startsWith('http://') || avatarData.startsWith('https://'))) {
                 element.innerHTML = `<img src="${avatarData}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
@@ -405,7 +551,7 @@
             }
         }
 
-        // Вход
+        // Авторизация
         document.getElementById('startBtn').addEventListener('click', async () => {
             const user = document.getElementById('authUsername').value.trim();
             const avatar = document.getElementById('authAvatar').value.trim() || '🐱';
@@ -416,9 +562,7 @@
                 localStorage.setItem('idi_user', user);
                 localStorage.setItem('idi_avatar', avatar);
 
-                // Регистрируем пользователя в глобальном списке участников для ЛС
                 await set(ref(database, 'users/' + user), { avatar: avatar });
-
                 initApp();
             } else {
                 alert("Введите никнейм!");
@@ -434,7 +578,7 @@
             openChat('global', 'Общий чат страны', '📢');
         }
 
-        // Загрузка списка пользователей для ЛС
+        // Загрузка участников ЛС
         function loadUsersList() {
             onChildAdded(ref(database, 'users'), (snapshot) => {
                 const username = snapshot.key;
@@ -464,25 +608,32 @@
             });
         }
 
-        // Открытие конкретного чата (Общего или ЛС)
-        let currentListener = null;
+        // Открытие чата без двоения сообщений!
         function openChat(chatId, title, avatar) {
             activeChatId = chatId;
             document.getElementById('activeChatTitle').innerText = title;
             renderAvatar(document.getElementById('activeChatAvatar'), avatar);
+            
+            // 1. Очистка списка сообщений
             chatMessages.innerHTML = '';
             messenger.classList.add('open-chat');
 
-            // Путь в базе данных зависит от того, общий чат это или ЛС
+            // 2. ОТКЛЮЧЕНИЕ старого слушателя (решает проблему дублирования)
+            if (currentChatRef) {
+                off(currentChatRef);
+            }
+
+            // 3. Выбор пути к базе
             let chatDbPath = 'global_chat';
             if (chatId !== 'global') {
-                // Создаем уникальный идентификатор диалога двух людей (сортируем имена по алфавиту)
                 const pair = [currentUser, chatId].sort().join('_');
                 chatDbPath = 'private_chats/' + pair;
             }
 
-            // Слушаем новые сообщения только для текущего открытого чата
-            onChildAdded(ref(database, chatDbPath), (snapshot) => {
+            currentChatRef = ref(database, chatDbPath);
+
+            // 4. Подписка на единственное событие
+            onChildAdded(currentChatRef, (snapshot) => {
                 const data = snapshot.val();
                 
                 const row = document.createElement('div');
@@ -508,7 +659,7 @@
             });
         }
 
-        // Клик по Общему чату
+        // Общий чат
         document.getElementById('globalChatItem').addEventListener('click', () => {
             document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
             document.getElementById('globalChatItem').classList.add('active');
@@ -541,12 +692,11 @@
             }
         });
 
-        // Кнопка назад (для телефонов)
+        // Навигация
         document.getElementById('backBtn').addEventListener('click', () => {
             messenger.classList.remove('open-chat');
         });
 
-        // Настройки и выезжающее меню
         const drawer = document.getElementById('sidebarDrawer');
         const overlay = document.getElementById('drawerOverlay');
 
