@@ -181,6 +181,7 @@
             cursor: pointer;
             border-bottom: 1px solid var(--border-color);
             transition: background 0.2s;
+            position: relative;
         }
 
         .chat-item:hover, .chat-item.active {
@@ -200,11 +201,26 @@
             border: 1px solid var(--border-color);
             flex-shrink: 0;
             overflow: hidden;
+            position: relative;
         }
 
         .chat-item-info { flex: 1; overflow: hidden; }
         .chat-item-title { font-weight: bold; color: var(--text-main); font-size: 0.95rem; }
         .chat-item-sub { font-size: 0.8rem; opacity: 0.7; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* ИНДИКАТОР ОНЛАЙН В СПИСКЕ ЧАТОВ */
+        .online-dot {
+            width: 12px;
+            height: 12px;
+            background-color: #2ec4b6;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            border: 2px solid var(--bg-chats-list);
+            display: none;
+        }
+        .online-dot.active { display: block; }
 
         /* --- ОКНО ЧАТА --- */
         .chat-window {
@@ -233,6 +249,12 @@
             cursor: pointer;
         }
 
+        .chat-status-text {
+            font-size: 0.75rem;
+            opacity: 0.8;
+            font-weight: normal;
+        }
+
         .chat-messages {
             flex: 1;
             padding: 15px;
@@ -250,29 +272,26 @@
             max-width: 85%;
             position: relative;
             touch-action: pan-y;
-            transition: transform 0.1s ease-out, background-color 0.3s ease;
-            cursor: grab;
+            transition: transform 0.1s ease-out, background-color 0.3s ease, box-shadow 0.2s ease;
+            cursor: pointer;
             border-radius: 12px;
-            padding: 2px 4px;
+            padding: 4px;
         }
 
-        /* Подсветка сообщения при переходе по ответу */
+        /* ПОДСВЕТКА ЗАЖАТОГО СООБЩЕНИЯ */
+        .message-row.msg-selected {
+            background-color: rgba(255, 215, 0, 0.25) !important;
+            box-shadow: 0 0 12px #ffd700;
+        }
+
         .message-row.highlight-msg {
             animation: highlightPulse 2s ease-in-out;
         }
 
         @keyframes highlightPulse {
-            0% {
-                background-color: rgba(255, 215, 0, 0.5);
-                transform: scale(1.02);
-            }
-            50% {
-                background-color: rgba(255, 215, 0, 0.25);
-            }
-            100% {
-                background-color: transparent;
-                transform: scale(1);
-            }
+            0% { background-color: rgba(255, 215, 0, 0.5); transform: scale(1.02); }
+            50% { background-color: rgba(255, 215, 0, 0.25); }
+            100% { background-color: transparent; transform: scale(1); }
         }
 
         .message-row.my-msg {
@@ -312,6 +331,13 @@
         .msg-author { font-size: 0.75rem; font-weight: bold; opacity: 0.8; margin-bottom: 2px; }
         .msg-time { font-size: 0.65rem; opacity: 0.7; text-align: right; margin-top: 3px; }
 
+        .edited-tag {
+            font-size: 0.65rem;
+            font-style: italic;
+            opacity: 0.7;
+            margin-left: 4px;
+        }
+
         .reply-preview-bubble {
             background: rgba(0,0,0,0.15);
             border-left: 3px solid var(--border-color);
@@ -319,16 +345,9 @@
             border-radius: 4px;
             margin-bottom: 5px;
             font-size: 0.8rem;
-            transition: opacity 0.2s;
         }
 
-        .reply-preview-bubble:hover {
-            opacity: 0.85;
-        }
-
-        .reply-author { font-weight: bold; font-size: 0.75rem; }
-
-        /* --- ИНТЕРАКТИВНЫЕ ИГРЫ (КАЗИНО И ФУТБОЛ) --- */
+        /* --- ИНТЕРАКТИВНЫЕ ИГРЫ --- */
         .interactive-box {
             background: #111;
             color: #fff;
@@ -359,7 +378,7 @@
             font-weight: bold;
         }
 
-        /* ПАНЕЛЬ ОТВЕТА / ПОВТОРА ИГРЫ */
+        /* ПАНЕЛЬ МЕНЮ СООБЩЕНИЯ / ОТВЕТА */
         .reply-bar {
             display: none;
             background: var(--bg-chats-list);
@@ -368,20 +387,26 @@
             border-top: 1px solid var(--border-color);
             align-items: center;
             justify-content: space-between;
+            gap: 8px;
         }
         .reply-bar.active { display: flex; }
-        .reply-bar-info { border-left: 3px solid var(--border-color); padding-left: 8px; }
+        .reply-bar-info { border-left: 3px solid var(--border-color); padding-left: 8px; flex:1; }
         .close-reply-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-main); }
 
         .action-fast-btn {
             background: var(--bg-header);
             color: var(--text-header);
             border: none;
-            padding: 5px 12px;
+            padding: 6px 12px;
             border-radius: 12px;
             cursor: pointer;
             font-weight: bold;
             font-size: 0.8rem;
+        }
+
+        .btn-danger {
+            background: #d90429 !important;
+            color: #fff !important;
         }
 
         .chat-input-area {
@@ -524,7 +549,7 @@
                     <div class="chat-item-avatar">📢</div>
                     <div class="chat-item-info">
                         <div class="chat-item-title">Общий чат страны</div>
-                        <div class="chat-item-sub">Все жители Идиаканта</div>
+                        <div class="chat-item-sub" id="globalTypingSub">Все жители Идиаканта</div>
                     </div>
                 </div>
             </div>
@@ -537,26 +562,29 @@
                 <div class="msg-avatar" id="activeChatAvatar">📢</div>
                 <div>
                     <h3 id="activeChatTitle" style="font-size:1rem;">Общий чат страны</h3>
+                    <div class="chat-status-text" id="activeChatStatus">онлайн</div>
                 </div>
             </div>
 
             <div class="chat-messages" id="chatMessages"></div>
 
-            <!-- Панель ответа / повторной отправки -->
+            <!-- Панель действия над сообщением (Ответ / Редактирование / Повтор) -->
             <div class="reply-bar" id="replyBar">
                 <div class="reply-bar-info">
                     <div id="replyBarAuthor" style="font-weight:bold; font-size:0.75rem;">Автор</div>
                     <div id="replyBarText" style="font-size:0.8rem; opacity:0.8;">Текст сообщения</div>
                 </div>
-                <div style="display:flex; gap:8px; align-items:center;">
+                <div style="display:flex; gap:6px; align-items:center;" id="replyActionsContainer">
                     <button class="action-fast-btn" id="repeatGameBtn" style="display:none;">🎲 Отправить ещё раз</button>
+                    <button class="action-fast-btn" id="editMsgBtn" style="display:none;">✏️ Изменить</button>
+                    <button class="action-fast-btn btn-danger" id="deleteMsgBtn" style="display:none;">🗑️ Удалить</button>
                     <button class="close-reply-btn" id="cancelReplyBtn">✕</button>
                 </div>
             </div>
 
             <form class="chat-input-area" id="chatForm">
                 <input type="text" id="userInput" placeholder="Напишите сообщение..." autocomplete="off" required>
-                <button type="submit">➤</button>
+                <button type="submit" id="sendBtn">➤</button>
             </form>
         </div>
 
@@ -564,7 +592,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, push, onChildAdded, set, off } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, push, onChildAdded, onChildChanged, onChildRemoved, onValue, set, remove, update, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyByKktnwPbg1zBU4wYR8hceDc57BR0Y4Zo",
@@ -584,8 +612,10 @@
         let currentAvatar = localStorage.getItem('idi_avatar') || '🐱';
         let activeChatId = 'global';
         let currentChatRef = null;
-        let selectedReplyMsg = null;
-        let gameToRepeat = null;
+        
+        let selectedMsgData = null; // Выбранное сообщение
+        let editingMsgId = null;    // ID редактируемого сообщения
+        let typingTimeout = null;
 
         let playedGames = JSON.parse(localStorage.getItem('idi_played_games') || '[]');
 
@@ -595,6 +625,9 @@
         const chatsList = document.getElementById('chatsList');
         const replyBar = document.getElementById('replyBar');
         const repeatGameBtn = document.getElementById('repeatGameBtn');
+        const editMsgBtn = document.getElementById('editMsgBtn');
+        const deleteMsgBtn = document.getElementById('deleteMsgBtn');
+        const userInput = document.getElementById('userInput');
 
         // Темы
         const themeSelect = document.getElementById('themeSelect');
@@ -624,7 +657,7 @@
             }
         }
 
-        // Авторизация
+        // Вход в приложение
         document.getElementById('startBtn').addEventListener('click', async () => {
             const user = document.getElementById('authUsername').value.trim();
             const avatar = document.getElementById('authAvatar').value.trim() || '🐱';
@@ -646,8 +679,37 @@
             authScreen.style.display = 'none';
             document.getElementById('drawerUsername').innerText = currentUser;
             renderAvatar(document.getElementById('drawerAvatar'), currentAvatar);
+            
+            setupPresence();
             loadUsersList();
             openChat('global', 'Общий чат страны', '📢');
+            setupTypingEvents();
+        }
+
+        // --- СИСТЕМА ОНЛАЙН / ОФЛАЙН СТАТУСА ---
+        function setupPresence() {
+            const myStatusRef = ref(database, 'status/' + currentUser);
+            const connectedRef = ref(database, '.info/connected');
+
+            onValue(connectedRef, (snap) => {
+                if (snap.val() === true) {
+                    onDisconnect(myStatusRef).set({ state: 'offline', last_changed: Date.now() });
+                    set(myStatusRef, { state: 'online', last_changed: Date.now() });
+                }
+            });
+        }
+
+        // --- ИНДИКАТОР ВВОДА СООБЩЕНИЯ (ПЕЧАТАЕТ...) ---
+        function setupTypingEvents() {
+            userInput.addEventListener('input', () => {
+                if (!currentUser) return;
+                set(ref(database, `typing/${activeChatId}/${currentUser}`), true);
+
+                clearTimeout(typingTimeout);
+                typingTimeout = setTimeout(() => {
+                    set(ref(database, `typing/${activeChatId}/${currentUser}`), false);
+                }, 2000);
+            });
         }
 
         function loadUsersList() {
@@ -660,10 +722,12 @@
                     chatItem.className = 'chat-item';
                     chatItem.id = 'user-chat-' + username;
                     chatItem.innerHTML = `
-                        <div class="chat-item-avatar" id="avatar-col-${username}"></div>
+                        <div class="chat-item-avatar" id="avatar-col-${username}">
+                            <div class="online-dot" id="dot-${username}"></div>
+                        </div>
                         <div class="chat-item-info">
                             <div class="chat-item-title">${username}</div>
-                            <div class="chat-item-sub">Личные сообщения</div>
+                            <div class="chat-item-sub" id="sub-${username}">Личные сообщения</div>
                         </div>
                     `;
 
@@ -675,8 +739,72 @@
 
                     chatsList.appendChild(chatItem);
                     renderAvatar(document.getElementById('avatar-col-' + username), data.avatar);
+
+                    // Отслеживаем онлайн статус пользователя в списке
+                    onValue(ref(database, 'status/' + username), (snap) => {
+                        const statusData = snap.val();
+                        const dot = document.getElementById('dot-' + username);
+                        if (dot) {
+                            if (statusData && statusData.state === 'online') dot.classList.add('active');
+                            else dot.classList.remove('active');
+                        }
+                        if (activeChatId === username) updateHeaderStatus(username);
+                    });
+
+                    // Отслеживаем печатает ли пользователь в ЛС
+                    onValue(ref(database, `typing/${username}/${username}`), (snap) => {
+                        const isTyping = snap.val();
+                        const sub = document.getElementById('sub-' + username);
+                        if (sub) {
+                            sub.innerText = isTyping ? '✍️ печатает...' : 'Личные сообщения';
+                            sub.style.color = isTyping ? '#ffd700' : 'inherit';
+                        }
+                        if (activeChatId === username) updateHeaderStatus(username, isTyping);
+                    });
                 }
             });
+
+            // Отслеживание ввода в Общем чате
+            onValue(ref(database, `typing/global`), (snap) => {
+                const typers = snap.val() || {};
+                const activeTypers = Object.keys(typers).filter(u => u !== currentUser && typers[u]);
+                const sub = document.getElementById('globalTypingSub');
+                if (sub) {
+                    if (activeTypers.length > 0) {
+                        sub.innerText = `✍️ ${activeTypers.join(', ')} печатает...`;
+                        sub.style.color = '#ffd700';
+                    } else {
+                        sub.innerText = 'Все жители Идиаканта';
+                        sub.style.color = 'inherit';
+                    }
+                }
+                if (activeChatId === 'global') updateHeaderStatus('global', activeTypers.length > 0, activeTypers);
+            });
+        }
+
+        function updateHeaderStatus(chatId, isTyping = false, typersList = []) {
+            const statusEl = document.getElementById('activeChatStatus');
+            if (chatId === 'global') {
+                if (isTyping) statusEl.innerText = `✍️ ${typersList.join(', ')} печатает...`;
+                else statusEl.innerText = 'все жители онлайн';
+                return;
+            }
+
+            if (isTyping) {
+                statusEl.innerText = '✍️ печатает...';
+                return;
+            }
+
+            onValue(ref(database, 'status/' + chatId), (snap) => {
+                const data = snap.val();
+                if (data && data.state === 'online') {
+                    statusEl.innerText = '🟢 онлайн';
+                    statusEl.style.color = '#2ec4b6';
+                } else {
+                    statusEl.innerText = '⚪ офлайн';
+                    statusEl.style.color = 'inherit';
+                }
+            }, { onlyOnce: true });
         }
 
         function openChat(chatId, title, avatar) {
@@ -688,7 +816,7 @@
             messenger.classList.add('open-chat');
             cancelReply();
 
-            if (currentChatRef) off(currentChatRef);
+            updateHeaderStatus(chatId);
 
             let chatDbPath = 'global_chat';
             if (chatId !== 'global') {
@@ -698,16 +826,34 @@
 
             currentChatRef = ref(database, chatDbPath);
 
+            // Слушаем новые сообщения
             onChildAdded(currentChatRef, (snapshot) => {
-                const data = snapshot.val();
-                renderSingleMessage(data, snapshot.key);
+                renderSingleMessage(snapshot.val(), snapshot.key);
+            });
+
+            // Слушаем изменения (редактирование)
+            onChildChanged(currentChatRef, (snapshot) => {
+                const msgEl = document.getElementById('msg-' + snapshot.key);
+                if (msgEl) {
+                    const data = snapshot.val();
+                    const textContainer = msgEl.querySelector('.msg-text');
+                    if (textContainer) {
+                        textContainer.innerHTML = `${data.text} <span class="edited-tag">(изм.)</span>`;
+                    }
+                }
+            });
+
+            // Слушаем удаления
+            onChildRemoved(currentChatRef, (snapshot) => {
+                const msgEl = document.getElementById('msg-' + snapshot.key);
+                if (msgEl) msgEl.remove();
             });
         }
 
         function renderSingleMessage(data, msgId) {
             const row = document.createElement('div');
             row.className = `message-row ${data.author === currentUser ? 'my-msg' : ''}`;
-            row.id = `msg-${msgId}`; // Уникальный ID сообщения для перехода
+            row.id = `msg-${msgId}`;
 
             const avatarDiv = document.createElement('div');
             avatarDiv.className = 'msg-avatar';
@@ -718,9 +864,8 @@
 
             let replyHTML = '';
             if (data.replyTo) {
-                const replyTargetId = data.replyTo.msgId ? `data-reply-target="${data.replyTo.msgId}"` : '';
                 replyHTML = `
-                    <div class="reply-preview-bubble reply-preview-clickable" ${replyTargetId} style="cursor: pointer;">
+                    <div class="reply-preview-bubble reply-preview-clickable" style="cursor: pointer;">
                         <div class="reply-author">${data.replyTo.author}</div>
                         <div>${data.replyTo.text}</div>
                     </div>
@@ -731,29 +876,17 @@
             let gameHTML = '';
             const hasPlayed = playedGames.includes(msgId);
 
-            // 1. КАЗИНО 🎰
             if (textContent.trim() === '🎰') {
                 const gameId = 'game-' + msgId;
-                gameHTML = `
-                    <div class="interactive-box" id="box-${gameId}">
-                        <div class="game-display" id="${gameId}">🎰 🎰 🎰</div>
-                        <div class="game-status" id="${gameId}-status">...</div>
-                    </div>
-                `;
+                gameHTML = `<div class="interactive-box" id="box-${gameId}"><div class="game-display" id="${gameId}">🎰 🎰 🎰</div><div class="game-status" id="${gameId}-status">...</div></div>`;
                 textContent = '';
                 const gameResult = data.gameResult || data.casinoResult; 
                 setTimeout(() => handleCasinoLogic(gameId, gameResult, msgId, hasPlayed), 100);
             }
 
-            // 2. ФУТБОЛ ⚽
             if (textContent.trim() === '⚽') {
                 const gameId = 'game-' + msgId;
-                gameHTML = `
-                    <div class="interactive-box" id="box-${gameId}">
-                        <div class="game-display" id="${gameId}">🥅 🧤 ⚽</div>
-                        <div class="game-status" id="${gameId}-status">Удар...</div>
-                    </div>
-                `;
+                gameHTML = `<div class="interactive-box" id="box-${gameId}"><div class="game-display" id="${gameId}">🥅 🧤 ⚽</div><div class="game-status" id="${gameId}-status">Удар...</div></div>`;
                 textContent = '';
                 setTimeout(() => handleFootballLogic(gameId, data.gameResult, msgId, hasPlayed), 100);
             }
@@ -761,7 +894,7 @@
             bubble.innerHTML = `
                 <div class="msg-author">${data.author}</div>
                 ${replyHTML}
-                <div>${textContent}</div>
+                <div class="msg-text">${textContent} ${data.isEdited ? '<span class="edited-tag">(изм.)</span>' : ''}</div>
                 ${gameHTML}
                 <div class="msg-time">${data.time}</div>
             `;
@@ -769,7 +902,7 @@
             row.appendChild(avatarDiv);
             row.appendChild(bubble);
 
-            // Переход по клику на ответ
+            // Клик по цитате
             const replyPreview = bubble.querySelector('.reply-preview-clickable');
             if (replyPreview && data.replyTo && data.replyTo.msgId) {
                 replyPreview.addEventListener('click', (e) => {
@@ -778,17 +911,8 @@
                 });
             }
 
-            if (data.text.trim() === '🎰' || data.text.trim() === '⚽') {
-                setTimeout(() => {
-                    const box = document.getElementById('box-game-' + msgId);
-                    if (box) {
-                        box.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            showRepeatMenu(data.text.trim(), data.author);
-                        });
-                    }
-                }, 150);
-            }
+            // --- ЗАЖАТИЕ / ДОЛГИЙ КЛИК ДЛЯ МЕНЮ ---
+            attachLongPressMenu(row, { ...data, msgId: msgId });
 
             attachSwipeToReply(row, { ...data, msgId: msgId });
 
@@ -796,35 +920,96 @@
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        // Прокрутка и подсветка сообщения
+        // ОБРАБОТЧИК ЗАЖАТИЯ (LONG PRESS) И ПРАВОГО КЛИКА
+        function attachLongPressMenu(element, msgData) {
+            let pressTimer = null;
+
+            const startPress = (e) => {
+                if (e.button && e.button !== 0) return; // Только левая кнопка
+                pressTimer = setTimeout(() => {
+                    openContextMenu(element, msgData);
+                }, 500); // 500 мс зажатие
+            };
+
+            const cancelPress = () => {
+                clearTimeout(pressTimer);
+            };
+
+            element.addEventListener('touchstart', startPress, { passive: true });
+            element.addEventListener('touchend', cancelPress);
+            element.addEventListener('touchmove', cancelPress);
+
+            element.addEventListener('mousedown', startPress);
+            element.addEventListener('mouseup', cancelPress);
+            element.addEventListener('mouseleave', cancelPress);
+
+            // Правый клик для ПК
+            element.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                openContextMenu(element, msgData);
+            });
+        }
+
+        function openContextMenu(element, msgData) {
+            document.querySelectorAll('.message-row').forEach(el => el.classList.remove('msg-selected'));
+            element.classList.add('msg-selected');
+
+            selectedMsgData = msgData;
+
+            document.getElementById('replyBarAuthor').innerText = msgData.author;
+            document.getElementById('replyBarText').innerText = msgData.text || 'Игра';
+
+            // Показываем доступные действия
+            repeatGameBtn.style.display = (msgData.text === '🎰' || msgData.text === '⚽') ? 'block' : 'none';
+            editMsgBtn.style.display = (msgData.author === currentUser && msgData.text !== '🎰' && msgData.text !== '⚽') ? 'block' : 'none';
+            deleteMsgBtn.style.display = (msgData.author === currentUser) ? 'block' : 'none';
+
+            replyBar.classList.add('active');
+        }
+
+        // КНОПКА: УДАЛИТЬ СООБЩЕНИЕ
+        deleteMsgBtn.addEventListener('click', () => {
+            if (selectedMsgData && selectedMsgData.msgId) {
+                let chatDbPath = 'global_chat';
+                if (activeChatId !== 'global') {
+                    const pair = [currentUser, activeChatId].sort().join('_');
+                    chatDbPath = 'private_chats/' + pair;
+                }
+                remove(ref(database, `${chatDbPath}/${selectedMsgData.msgId}`));
+                cancelReply();
+            }
+        });
+
+        // КНОПКА: ИЗМЕНИТЬ СООБЩЕНИЕ
+        editMsgBtn.addEventListener('click', () => {
+            if (selectedMsgData && selectedMsgData.msgId) {
+                editingMsgId = selectedMsgData.msgId;
+                userInput.value = selectedMsgData.text;
+                userInput.focus();
+                document.getElementById('sendBtn').innerText = '✓';
+            }
+        });
+
         function scrollToMessage(targetMsgId) {
             const targetEl = document.getElementById(`msg-${targetMsgId}`);
             if (targetEl) {
                 targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 targetEl.classList.remove('highlight-msg');
-                void targetEl.offsetWidth; // Перезапуск анимации
+                void targetEl.offsetWidth;
                 targetEl.classList.add('highlight-msg');
-                
-                setTimeout(() => {
-                    targetEl.classList.remove('highlight-msg');
-                }, 2000);
+                setTimeout(() => targetEl.classList.remove('highlight-msg'), 2000);
             }
         }
 
-        // АНИМАЦИЯ КАЗИНО 🎰
+        // АНИМАЦИИ ИГР
         function handleCasinoLogic(id, finalResult, msgId, hasPlayed) {
             const reelsEl = document.getElementById(id);
             const statusEl = document.getElementById(id + '-status');
             if (!reelsEl) return;
-
             const symbols = ['🍋', '🍒', '7️⃣', '🍇'];
 
             if (!finalResult) {
-                finalResult = [
-                    symbols[Math.floor(Math.random() * 4)],
-                    symbols[Math.floor(Math.random() * 4)],
-                    symbols[Math.floor(Math.random() * 4)]
-                ];
+                finalResult = [symbols[Math.floor(Math.random() * 4)], symbols[Math.floor(Math.random() * 4)], symbols[Math.floor(Math.random() * 4)]];
             }
 
             const updateStatus = (res) => {
@@ -841,7 +1026,6 @@
 
             statusEl.innerText = "Крутим...";
             let ticks = 0;
-
             const interval = setInterval(() => {
                 reelsEl.innerText = `${symbols[Math.floor(Math.random()*4)]} ${symbols[Math.floor(Math.random()*4)]} ${symbols[Math.floor(Math.random()*4)]}`;
                 ticks++;
@@ -854,19 +1038,14 @@
             }, 80);
         }
 
-        // АНИМАЦИЯ ФУТБОЛА ⚽
         function handleFootballLogic(id, finalResult, msgId, hasPlayed) {
             const displayEl = document.getElementById(id);
             const statusEl = document.getElementById(id + '-status');
             if (!displayEl) return;
 
-            if (!finalResult) {
-                finalResult = { isGoal: Math.random() > 0.5 };
-            }
+            if (!finalResult) finalResult = { isGoal: Math.random() > 0.5 };
 
-            const updateStatus = (isGoal) => {
-                statusEl.innerText = isGoal ? "🎯 ГОЛ!!!" : "❌ СЕЙВ ВРАТАРЯ!";
-            };
+            const updateStatus = (isGoal) => statusEl.innerText = isGoal ? "🎯 ГОЛ!!!" : "❌ СЕЙВ ВРАТАРЯ!";
 
             if (hasPlayed) {
                 displayEl.innerText = finalResult.isGoal ? "🥅 ⚽ 🧤" : "🥅 🧤⚽";
@@ -877,11 +1056,9 @@
             statusEl.innerText = "Удар...";
             let frames = ["🥅 ⚽  🧤", "🥅  ⚽ 🧤", "🥅   ⚽🧤"];
             let step = 0;
-
             const interval = setInterval(() => {
                 displayEl.innerText = frames[step % frames.length];
                 step++;
-
                 if (step > 10) {
                     clearInterval(interval);
                     displayEl.innerText = finalResult.isGoal ? "🥅 ⚽ 🧤" : "🥅 🧤⚽";
@@ -896,23 +1073,14 @@
             localStorage.setItem('idi_played_games', JSON.stringify(playedGames));
         }
 
-        function showRepeatMenu(emoji, author) {
-            gameToRepeat = emoji;
-            selectedReplyMsg = null;
-            document.getElementById('replyBarAuthor').innerText = author;
-            document.getElementById('replyBarText').innerText = `Интерактивный эмодзи ${emoji}`;
-            repeatGameBtn.style.display = 'block';
-            replyBar.classList.add('active');
-        }
-
         repeatGameBtn.addEventListener('click', () => {
-            if (gameToRepeat) {
-                sendDirectMessage(gameToRepeat);
+            if (selectedMsgData && (selectedMsgData.text === '🎰' || selectedMsgData.text === '⚽')) {
+                sendDirectMessage(selectedMsgData.text);
                 cancelReply();
             }
         });
 
-        // Свайп влево для ответа
+        // Свайп влево
         function attachSwipeToReply(rowElement, msgData) {
             let startX = 0, currentX = 0, isSwiping = false;
 
@@ -929,41 +1097,30 @@
                 if (!isSwiping) return;
                 isSwiping = false;
                 rowElement.style.transform = `translateX(0px)`;
-                if (currentX < -50) setReplyMessage(msgData);
+                if (currentX < -50) openContextMenu(rowElement, msgData);
                 currentX = 0;
             };
 
-            rowElement.addEventListener('touchstart', (e) => startSwipe(e.touches[0].clientX));
-            rowElement.addEventListener('touchmove', (e) => moveSwipe(e.touches[0].clientX));
+            rowElement.addEventListener('touchstart', (e) => startSwipe(e.touches[0].clientX), { passive: true });
+            rowElement.addEventListener('touchmove', (e) => moveSwipe(e.touches[0].clientX), { passive: true });
             rowElement.addEventListener('touchend', endSwipe);
-
-            rowElement.addEventListener('mousedown', (e) => startSwipe(e.clientX));
-            window.addEventListener('mousemove', (e) => moveSwipe(e.clientX));
-            window.addEventListener('mouseup', endSwipe);
-        }
-
-        function setReplyMessage(msgData) {
-            selectedReplyMsg = msgData;
-            gameToRepeat = null;
-            repeatGameBtn.style.display = 'none';
-            document.getElementById('replyBarAuthor').innerText = msgData.author;
-            document.getElementById('replyBarText').innerText = msgData.text || 'Игра';
-            replyBar.classList.add('active');
-            document.getElementById('userInput').focus();
         }
 
         function cancelReply() {
-            selectedReplyMsg = null;
-            gameToRepeat = null;
+            selectedMsgData = null;
+            editingMsgId = null;
             repeatGameBtn.style.display = 'none';
+            editMsgBtn.style.display = 'none';
+            deleteMsgBtn.style.display = 'none';
             replyBar.classList.remove('active');
+            document.querySelectorAll('.message-row').forEach(el => el.classList.remove('msg-selected'));
+            document.getElementById('sendBtn').innerText = '➤';
         }
 
         document.getElementById('cancelReplyBtn').addEventListener('click', cancelReply);
 
         function sendDirectMessage(text) {
             if (!text || !currentUser) return;
-            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
             let chatDbPath = 'global_chat';
             if (activeChatId !== 'global') {
@@ -971,6 +1128,18 @@
                 chatDbPath = 'private_chats/' + pair;
             }
 
+            // Если идет редактирование существующего сообщения
+            if (editingMsgId) {
+                update(ref(database, `${chatDbPath}/${editingMsgId}`), {
+                    text: text,
+                    isEdited: true
+                });
+                cancelReply();
+                return;
+            }
+
+            // Создание нового сообщения
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             const msgObject = {
                 author: currentUser,
                 avatar: currentAvatar,
@@ -980,49 +1149,43 @@
 
             if (text === '🎰') {
                 const symbols = ['🍋', '🍒', '7️⃣', '🍇'];
-                msgObject.gameResult = [
-                    symbols[Math.floor(Math.random() * 4)],
-                    symbols[Math.floor(Math.random() * 4)],
-                    symbols[Math.floor(Math.random() * 4)]
-                ];
+                msgObject.gameResult = [symbols[Math.floor(Math.random() * 4)], symbols[Math.floor(Math.random() * 4)], symbols[Math.floor(Math.random() * 4)]];
             } else if (text === '⚽') {
                 msgObject.gameResult = { isGoal: Math.random() > 0.5 };
             }
 
-            if (selectedReplyMsg) {
+            if (selectedMsgData) {
                 msgObject.replyTo = {
-                    author: selectedReplyMsg.author,
-                    text: selectedReplyMsg.text || 'Игра',
-                    msgId: selectedReplyMsg.msgId || null
+                    author: selectedMsgData.author,
+                    text: selectedMsgData.text || 'Игра',
+                    msgId: selectedMsgData.msgId || null
                 };
             }
 
             push(ref(database, chatDbPath), msgObject);
+            
+            // Сбрасываем статус печатает
+            set(ref(database, `typing/${activeChatId}/${currentUser}`), false);
         }
 
-        // Форма отправки
         document.getElementById('chatForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            const input = document.getElementById('userInput');
-            const text = input.value.trim();
-
+            const text = userInput.value.trim();
             if (text) {
                 sendDirectMessage(text);
-                input.value = '';
+                userInput.value = '';
                 cancelReply();
             }
         });
 
-        // Навигация
+        // Панель навигации
         document.getElementById('globalChatItem').addEventListener('click', () => {
             document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
             document.getElementById('globalChatItem').classList.add('active');
             openChat('global', 'Общий чат страны', '📢');
         });
 
-        document.getElementById('backBtn').addEventListener('click', () => {
-            messenger.classList.remove('open-chat');
-        });
+        document.getElementById('backBtn').addEventListener('click', () => messenger.classList.remove('open-chat'));
 
         const drawer = document.getElementById('sidebarDrawer');
         const overlay = document.getElementById('drawerOverlay');
@@ -1047,7 +1210,10 @@
             overlay.classList.remove('active');
         });
 
-        document.getElementById('logoutBtn').addEventListener('click', () => {
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            if (currentUser) {
+                await set(ref(database, 'status/' + currentUser), { state: 'offline', last_changed: Date.now() });
+            }
             localStorage.clear();
             location.reload();
         });
