@@ -100,7 +100,7 @@
             position: relative;
         }
 
-        /* --- БОКОВАЯ ПАНЕЛЬ С НАСТРОЙКАМИ --- */
+        /* --- НАСТРОЙКИ --- */
         .sidebar-drawer {
             position: absolute;
             top: 0; left: -300px;
@@ -301,8 +301,8 @@
         }
         .reply-author { font-weight: bold; font-size: 0.75rem; }
 
-        /* --- КАЗИНО (СЛОТЫ) --- */
-        .casino-box {
+        /* --- ИНТЕРАКТИВНЫЕ ИГРЫ (КАЗИНО И ФУТБОЛ) --- */
+        .interactive-box {
             background: #111;
             color: #fff;
             padding: 10px;
@@ -311,23 +311,28 @@
             text-align: center;
             display: inline-block;
             margin-top: 5px;
+            cursor: pointer;
+            transition: transform 0.1s;
         }
-        .casino-reels {
+        .interactive-box:active { transform: scale(0.97); }
+
+        .game-display {
             font-size: 1.8rem;
-            letter-spacing: 5px;
+            letter-spacing: 3px;
             background: #222;
-            padding: 5px 10px;
+            padding: 5px 12px;
             border-radius: 6px;
             border: 1px solid #444;
+            min-width: 140px;
         }
-        .casino-status {
+        .game-status {
             font-size: 0.75rem;
             color: #ffd700;
             margin-top: 4px;
             font-weight: bold;
         }
 
-        /* ПАНЕЛЬ ОТВЕТА */
+        /* ПАНЕЛЬ ОТВЕТА / ПОВТОРА ИГРЫ */
         .reply-bar {
             display: none;
             background: var(--bg-chats-list);
@@ -340,6 +345,17 @@
         .reply-bar.active { display: flex; }
         .reply-bar-info { border-left: 3px solid var(--border-color); padding-left: 8px; }
         .close-reply-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-main); }
+
+        .action-fast-btn {
+            background: var(--bg-header);
+            color: var(--text-header);
+            border: none;
+            padding: 5px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
 
         .chat-input-area {
             display: flex;
@@ -499,12 +515,16 @@
 
             <div class="chat-messages" id="chatMessages"></div>
 
+            <!-- Панель ответа / повторной отправки -->
             <div class="reply-bar" id="replyBar">
                 <div class="reply-bar-info">
                     <div id="replyBarAuthor" style="font-weight:bold; font-size:0.75rem;">Автор</div>
                     <div id="replyBarText" style="font-size:0.8rem; opacity:0.8;">Текст сообщения</div>
                 </div>
-                <button class="close-reply-btn" id="cancelReplyBtn">✕</button>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <button class="action-fast-btn" id="repeatGameBtn" style="display:none;">🎲 Отправить ещё раз</button>
+                    <button class="close-reply-btn" id="cancelReplyBtn">✕</button>
+                </div>
             </div>
 
             <form class="chat-input-area" id="chatForm">
@@ -538,15 +558,16 @@
         let activeChatId = 'global';
         let currentChatRef = null;
         let selectedReplyMsg = null;
+        let gameToRepeat = null; // Храним эмодзи для повтора (🎰 или ⚽)
 
-        // Хранилище просмотренных анимаций казино
-        let playedCasinos = JSON.parse(localStorage.getItem('idi_played_casinos') || '[]');
+        let playedGames = JSON.parse(localStorage.getItem('idi_played_games') || '[]');
 
         const authScreen = document.getElementById('authScreen');
         const messenger = document.getElementById('messenger');
         const chatMessages = document.getElementById('chatMessages');
         const chatsList = document.getElementById('chatsList');
         const replyBar = document.getElementById('replyBar');
+        const repeatGameBtn = document.getElementById('repeatGameBtn');
 
         // Темы
         const themeSelect = document.getElementById('themeSelect');
@@ -678,34 +699,58 @@
             }
 
             let textContent = data.text;
-            let casinoHTML = '';
+            let gameHTML = '';
+            const hasPlayed = playedGames.includes(msgId);
 
-            // ОБРАБОТКА СЛОТОВ КАЗИНО 🎰
+            // 1. КАЗИНО 🎰
             if (textContent.trim() === '🎰') {
-                const casinoId = 'casino-' + msgId;
-                casinoHTML = `
-                    <div class="casino-box">
-                        <div class="casino-reels" id="${casinoId}">🎰 🎰 🎰</div>
-                        <div class="casino-status" id="${casinoId}-status">...</div>
+                const gameId = 'game-' + msgId;
+                gameHTML = `
+                    <div class="interactive-box" id="box-${gameId}">
+                        <div class="game-display" id="${gameId}">🎰 🎰 🎰</div>
+                        <div class="game-status" id="${gameId}-status">...</div>
                     </div>
                 `;
                 textContent = '';
+                setTimeout(() => handleCasinoLogic(gameId, data.gameResult, msgId, hasPlayed), 100);
+            }
 
-                // Проверяем: проигрывалась ли анимация ДЛЯ ЭТОГО сообщения
-                const hasPlayed = playedCasinos.includes(msgId);
-                setTimeout(() => handleCasinoLogic(casinoId, data.casinoResult, msgId, hasPlayed), 100);
+            // 2. ФУТБОЛ ⚽
+            if (textContent.trim() === '⚽') {
+                const gameId = 'game-' + msgId;
+                gameHTML = `
+                    <div class="interactive-box" id="box-${gameId}">
+                        <div class="game-display" id="${gameId}">🥅 🧤 ⚽</div>
+                        <div class="game-status" id="${gameId}-status">Удар...</div>
+                    </div>
+                `;
+                textContent = '';
+                setTimeout(() => handleFootballLogic(gameId, data.gameResult, msgId, hasPlayed), 100);
             }
 
             bubble.innerHTML = `
                 <div class="msg-author">${data.author}</div>
                 ${replyHTML}
                 <div>${textContent}</div>
-                ${casinoHTML}
+                ${gameHTML}
                 <div class="msg-time">${data.time}</div>
             `;
 
             row.appendChild(avatarDiv);
             row.appendChild(bubble);
+
+            // Клик на игру вызывает меню с кнопкой "Отправить ещё раз"
+            if (data.text.trim() === '🎰' || data.text.trim() === '⚽') {
+                setTimeout(() => {
+                    const box = document.getElementById('box-game-' + msgId);
+                    if (box) {
+                        box.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            showRepeatMenu(data.text.trim(), data.author);
+                        });
+                    }
+                }, 150);
+            }
 
             attachSwipeToReply(row, data);
 
@@ -713,65 +758,100 @@
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        // Логика Казино: Анимация 1 раз или сразу статический результат
-        function handleCasinoLogic(elementId, finalResult, msgId, hasPlayed) {
-            const reelsEl = document.getElementById(elementId);
-            const statusEl = document.getElementById(elementId + '-status');
+        // АНИМАЦИЯ КАЗИНО 🎰
+        function handleCasinoLogic(id, finalResult, msgId, hasPlayed) {
+            const reelsEl = document.getElementById(id);
+            const statusEl = document.getElementById(id + '-status');
             if (!reelsEl || !finalResult) return;
 
-            const updateStatusText = (res) => {
-                if (res[0] === '7️⃣' && res[1] === '7️⃣' && res[2] === '7️⃣') {
-                    statusEl.innerText = "💥 ДЖЕКПОТ! 777 💥";
-                } else if (res[0] === res[1] && res[1] === res[2]) {
-                    statusEl.innerText = "🎉 ВЫИГРЫШ!";
-                } else {
-                    statusEl.innerText = "❌ Не повезло!";
-                }
+            const updateStatus = (res) => {
+                if (res[0] === '7️⃣' && res[1] === '7️⃣' && res[2] === '7️⃣') statusEl.innerText = "💥 ДЖЕКПОТ! 777 💥";
+                else if (res[0] === res[1] && res[1] === res[2]) statusEl.innerText = "🎉 ВЫИГРЫШ!";
+                else statusEl.innerText = "❌ Не повезло!";
             };
 
-            // Если УЖЕ крутилось ранее — просто показываем фиксированные символы!
             if (hasPlayed) {
                 reelsEl.innerText = `${finalResult[0]} ${finalResult[1]} ${finalResult[2]}`;
-                updateStatusText(finalResult);
+                updateStatus(finalResult);
                 return;
             }
 
-            // Если зашли ПЕРВЫЙ РАЗ — проигрываем анимацию 1 раз
             statusEl.innerText = "Крутим...";
             const symbols = ['🍋', '🍒', '7️⃣', '🍇'];
             let ticks = 0;
 
             const interval = setInterval(() => {
-                const r1 = symbols[Math.floor(Math.random() * symbols.length)];
-                const r2 = symbols[Math.floor(Math.random() * symbols.length)];
-                const r3 = symbols[Math.floor(Math.random() * symbols.length)];
-                reelsEl.innerText = `${r1} ${r2} ${r3}`;
+                reelsEl.innerText = `${symbols[Math.floor(Math.random()*4)]} ${symbols[Math.floor(Math.random()*4)]} ${symbols[Math.floor(Math.random()*4)]}`;
                 ticks++;
-
                 if (ticks > 15) {
                     clearInterval(interval);
-                    // Фиксируем конечную сохраненную позицию из БД
                     reelsEl.innerText = `${finalResult[0]} ${finalResult[1]} ${finalResult[2]}`;
-                    updateStatusText(finalResult);
-
-                    // Запоминаем, что для этого сообщения анимация ЗАВЕРШЕНА
-                    playedCasinos.push(msgId);
-                    localStorage.setItem('idi_played_casinos', JSON.stringify(playedCasinos));
+                    updateStatus(finalResult);
+                    savePlayedGame(msgId);
                 }
             }, 80);
         }
 
-        // Свайп влево для ответа
-        function attachSwipeToReply(rowElement, msgData) {
-            let startX = 0;
-            let currentX = 0;
-            let isSwiping = false;
+        // АНИМАЦИЯ ФУТБОЛА ⚽
+        function handleFootballLogic(id, finalResult, msgId, hasPlayed) {
+            const displayEl = document.getElementById(id);
+            const statusEl = document.getElementById(id + '-status');
+            if (!displayEl || !finalResult) return;
 
-            const startSwipe = (x) => {
-                startX = x;
-                isSwiping = true;
+            const updateStatus = (isGoal) => {
+                statusEl.innerText = isGoal ? "🎯 ГОЛ!!!" : "❌ СЕЙВ ВРАТАРЯ!";
             };
 
+            if (hasPlayed) {
+                displayEl.innerText = finalResult.isGoal ? "🥅 ⚽ 🧤" : "🥅 🧤⚽";
+                updateStatus(finalResult.isGoal);
+                return;
+            }
+
+            statusEl.innerText = "Удар...";
+            let frames = ["🥅 ⚽  🧤", "🥅  ⚽ 🧤", "🥅   ⚽🧤"];
+            let step = 0;
+
+            const interval = setInterval(() => {
+                displayEl.innerText = frames[step % frames.length];
+                step++;
+
+                if (step > 10) {
+                    clearInterval(interval);
+                    displayEl.innerText = finalResult.isGoal ? "🥅 ⚽ 🧤" : "🥅 🧤⚽";
+                    updateStatus(finalResult.isGoal);
+                    savePlayedGame(msgId);
+                }
+            }, 120);
+        }
+
+        function savePlayedGame(msgId) {
+            playedGames.push(msgId);
+            localStorage.setItem('idi_played_games', JSON.stringify(playedGames));
+        }
+
+        // Показ кнопки "Отправить ещё раз"
+        function showRepeatMenu(emoji, author) {
+            gameToRepeat = emoji;
+            selectedReplyMsg = null;
+            document.getElementById('replyBarAuthor').innerText = author;
+            document.getElementById('replyBarText').innerText = `Интерактивный эмодзи ${emoji}`;
+            repeatGameBtn.style.display = 'block';
+            replyBar.classList.add('active');
+        }
+
+        repeatGameBtn.addEventListener('click', () => {
+            if (gameToRepeat) {
+                sendDirectMessage(gameToRepeat);
+                cancelReply();
+            }
+        });
+
+        // Свайп влево для ответа
+        function attachSwipeToReply(rowElement, msgData) {
+            let startX = 0, currentX = 0, isSwiping = false;
+
+            const startSwipe = (x) => { startX = x; isSwiping = true; };
             const moveSwipe = (x) => {
                 if (!isSwiping) return;
                 const diffX = x - startX;
@@ -780,15 +860,11 @@
                     rowElement.style.transform = `translateX(${currentX}px)`;
                 }
             };
-
             const endSwipe = () => {
                 if (!isSwiping) return;
                 isSwiping = false;
                 rowElement.style.transform = `translateX(0px)`;
-
-                if (currentX < -50) {
-                    setReplyMessage(msgData);
-                }
+                if (currentX < -50) setReplyMessage(msgData);
                 currentX = 0;
             };
 
@@ -803,62 +879,72 @@
 
         function setReplyMessage(msgData) {
             selectedReplyMsg = msgData;
+            gameToRepeat = null;
+            repeatGameBtn.style.display = 'none';
             document.getElementById('replyBarAuthor').innerText = msgData.author;
-            document.getElementById('replyBarText').innerText = msgData.text || '🎰 Слоты';
+            document.getElementById('replyBarText').innerText = msgData.text || 'Игра';
             replyBar.classList.add('active');
             document.getElementById('userInput').focus();
         }
 
         function cancelReply() {
             selectedReplyMsg = null;
+            gameToRepeat = null;
+            repeatGameBtn.style.display = 'none';
             replyBar.classList.remove('active');
         }
 
         document.getElementById('cancelReplyBtn').addEventListener('click', cancelReply);
 
-        // Отправка сообщений
+        function sendDirectMessage(text) {
+            if (!text || !currentUser) return;
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            let chatDbPath = 'global_chat';
+            if (activeChatId !== 'global') {
+                const pair = [currentUser, activeChatId].sort().join('_');
+                chatDbPath = 'private_chats/' + pair;
+            }
+
+            const msgObject = {
+                author: currentUser,
+                avatar: currentAvatar,
+                text: text,
+                time: time
+            };
+
+            // Генерация результатов
+            if (text === '🎰') {
+                const symbols = ['🍋', '🍒', '7️⃣', '🍇'];
+                msgObject.gameResult = [
+                    symbols[Math.floor(Math.random() * 4)],
+                    symbols[Math.floor(Math.random() * 4)],
+                    symbols[Math.floor(Math.random() * 4)]
+                ];
+            } else if (text === '⚽') {
+                msgObject.gameResult = { isGoal: Math.random() > 0.5 };
+            }
+
+            if (selectedReplyMsg) {
+                msgObject.replyTo = {
+                    author: selectedReplyMsg.author,
+                    text: selectedReplyMsg.text || 'Игра'
+                };
+            }
+
+            push(ref(database, chatDbPath), msgObject);
+        }
+
+        // Форма отправки
         document.getElementById('chatForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const input = document.getElementById('userInput');
             const text = input.value.trim();
 
-            if (text && currentUser) {
-                const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-                let chatDbPath = 'global_chat';
-                if (activeChatId !== 'global') {
-                    const pair = [currentUser, activeChatId].sort().join('_');
-                    chatDbPath = 'private_chats/' + pair;
-                }
-
-                const msgObject = {
-                    author: currentUser,
-                    avatar: currentAvatar,
-                    text: text,
-                    time: time
-                };
-
-                // При отправке казино ГЕНЕРИРУЕМ И ФИКСИРУЕМ результат 1 раз навсегда!
-                if (text === '🎰') {
-                    const symbols = ['🍋', '🍒', '7️⃣', '🍇'];
-                    msgObject.casinoResult = [
-                        symbols[Math.floor(Math.random() * symbols.length)],
-                        symbols[Math.floor(Math.random() * symbols.length)],
-                        symbols[Math.floor(Math.random() * symbols.length)]
-                    ];
-                }
-
-                if (selectedReplyMsg) {
-                    msgObject.replyTo = {
-                        author: selectedReplyMsg.author,
-                        text: selectedReplyMsg.text || '🎰 Слоты'
-                    };
-                }
-
-                push(ref(database, chatDbPath), msgObject).then(() => {
-                    input.value = '';
-                    cancelReply();
-                });
+            if (text) {
+                sendDirectMessage(text);
+                input.value = '';
+                cancelReply();
             }
         });
 
