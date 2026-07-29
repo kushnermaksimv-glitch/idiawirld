@@ -224,6 +224,7 @@
             display: flex;
             flex-direction: column;
             background-color: var(--bg-window);
+            position: relative;
         }
 
         .chat-window-header {
@@ -333,6 +334,14 @@
             margin-left: 4px;
         }
 
+        .sticker-img {
+            max-width: 140px;
+            max-height: 140px;
+            border-radius: 8px;
+            display: block;
+            margin-top: 4px;
+        }
+
         .typing-indicator-row {
             display: none;
             align-self: flex-start;
@@ -433,9 +442,10 @@
             background-color: var(--bg-container);
             border-top: 1px solid var(--border-color);
             gap: 8px;
+            align-items: center;
         }
 
-        .chat-input-area input {
+        .chat-input-area input[type="text"] {
             flex: 1;
             padding: 10px;
             border: 1px solid var(--border-color);
@@ -450,11 +460,62 @@
             background: var(--bg-header);
             color: var(--text-header);
             border: none;
-            padding: 10px 18px;
+            padding: 10px 14px;
             border-radius: 20px;
             cursor: pointer;
             font-weight: bold;
         }
+
+        /* --- ПАНЕЛЬ СТИКЕРОВ --- */
+        .stickers-panel {
+            position: absolute;
+            bottom: 60px;
+            right: 10px;
+            width: 320px;
+            height: 280px;
+            background: var(--bg-container);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+            display: none;
+            flex-direction: column;
+            z-index: 25;
+            padding: 10px;
+            gap: 8px;
+        }
+        .stickers-panel.active { display: flex; }
+        .stickers-tabs { display: flex; gap: 5px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px; }
+        .sticker-tab-btn {
+            background: var(--bg-chats-list);
+            color: var(--text-main);
+            border: none;
+            padding: 4px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        .sticker-tab-btn.active {
+            background: var(--bg-header);
+            color: var(--text-header);
+        }
+        .stickers-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            overflow-y: auto;
+            padding: 4px;
+        }
+        .sticker-item {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            transition: transform 0.1s;
+        }
+        .sticker-item:hover { transform: scale(1.08); }
 
         .auth-screen {
             position: absolute;
@@ -492,6 +553,18 @@
             border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
+        }
+
+        .file-upload-btn {
+            display: inline-block;
+            padding: 8px 12px;
+            background: var(--bg-chat-active);
+            color: var(--text-main);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            text-align: center;
+            border: 1px solid var(--border-color);
         }
 
         /* --- МОДАЛЬНОЕ ОКНО "КТО В СЕТИ" --- */
@@ -552,6 +625,7 @@
             </div>
         </div>
 
+        <!-- ШТОРКА НАСТРОЕК -->
         <div class="sidebar-drawer" id="sidebarDrawer">
             <h3>⚙️ Настройки</h3>
             
@@ -561,9 +635,14 @@
             </div>
 
             <div class="setting-group">
-                <label>Аватар (Ссылка / Эмодзи):</label>
-                <input type="text" id="setAvatarInput" class="auth-input" placeholder="например 😎">
-                <button class="auth-btn" id="saveAvatarBtn" style="margin-top:5px;">Сохранить фото</button>
+                <label>Аватар (Эмодзи или Загрузить фото):</label>
+                <input type="text" id="setAvatarInput" class="auth-input" placeholder="Введите эмодзи 😎">
+                <div style="text-align:center; font-size:0.8rem; opacity:0.7;">или</div>
+                <label class="file-upload-btn">
+                    📷 Выбрать фото с устройства
+                    <input type="file" id="avatarFileInput" accept="image/*" style="display:none;">
+                </label>
+                <button class="auth-btn" id="saveAvatarBtn" style="margin-top:5px;">Сохранить аватар</button>
             </div>
 
             <div class="setting-group">
@@ -589,11 +668,21 @@
             <button class="auth-btn" id="logoutBtn" style="opacity: 0.8;">Выйти</button>
         </div>
 
+        <!-- ЭКРАН ВХОДА -->
         <div class="auth-screen" id="authScreen">
             <h2>🐾 Мир Идиаканта</h2>
             <input type="text" id="authUsername" class="auth-input" placeholder="Логин (Никнейм)">
             <input type="password" id="authPassword" class="auth-input" placeholder="Пароль">
-            <input type="text" id="authAvatar" class="auth-input" placeholder="Аватар (Эмодзи или Ссылка)">
+            
+            <div style="width:100%; max-width:280px; text-align:center;">
+                <input type="text" id="authAvatar" class="auth-input" placeholder="Аватар (Эмодзи)">
+                <div style="margin: 5px 0; font-size:0.8rem; opacity:0.7;">или загрузи фото:</div>
+                <label class="file-upload-btn" style="width:100%;">
+                    📁 Фото профиля (в текст)
+                    <input type="file" id="authAvatarFile" accept="image/*" style="display:none;">
+                </label>
+            </div>
+
             <button class="auth-btn" id="startBtn">Войти в Мессенджер</button>
         </div>
 
@@ -626,10 +715,28 @@
 
             <div class="chat-messages" id="chatMessages"></div>
 
-            <!-- ИНДИКАТОР ПЕЧАТИ В ЛЕНТЕ СООБЩЕНИЙ -->
+            <!-- ИНДИКАТОР ПЕЧАТИ В ЛЕНТЕ -->
             <div class="typing-indicator-row" id="typingIndicatorRow">
                 <div class="msg-avatar" id="typingAvatar">✍️</div>
                 <div class="typing-bubble" id="typingText">кто-то печатает...</div>
+            </div>
+
+            <!-- ПАНЕЛЬ СТИКЕРОВ -->
+            <div class="stickers-panel" id="stickersPanel">
+                <div class="stickers-tabs">
+                    <button class="sticker-tab-btn active" id="tabGeneralStickers">📢 Общие</button>
+                    <button class="sticker-tab-btn" id="tabMyPackStickers">➕ Мой пак</button>
+                </div>
+
+                <div id="packCreateArea" style="display:none; flex-direction:column; gap:5px; margin-bottom:5px;">
+                    <input type="text" id="packNameInput" class="auth-input" style="padding:4px; font-size:0.8rem;" placeholder="Название пака">
+                    <label class="file-upload-btn" style="padding:4px; font-size:0.8rem;">
+                        🖼️ Добавить стикер (картинка -> текст)
+                        <input type="file" id="stickerFileInput" accept="image/*" style="display:none;">
+                    </label>
+                </div>
+
+                <div class="stickers-grid" id="stickersGrid"></div>
             </div>
 
             <div class="reply-bar" id="replyBar">
@@ -646,6 +753,7 @@
             </div>
 
             <form class="chat-input-area" id="chatForm">
+                <button type="button" id="toggleStickersBtn" style="font-size:1.2rem; padding:6px 10px;">😊</button>
                 <input type="text" id="userInput" placeholder="Напишите сообщение..." autocomplete="off" required>
                 <button type="submit" id="sendBtn">➤</button>
             </form>
@@ -675,7 +783,7 @@
         let currentAvatar = localStorage.getItem('idi_avatar') || '🐱';
         let activeChatId = 'global';
         let currentChatRef = null;
-        let allUsersData = {}; // Кеш пользователей
+        let allUsersData = {};
 
         let selectedMsgData = null;
         let editingMsgId = null;
@@ -683,6 +791,7 @@
 
         let playedGames = JSON.parse(localStorage.getItem('idi_played_games') || '[]');
 
+        // Элементы UI
         const authScreen = document.getElementById('authScreen');
         const messenger = document.getElementById('messenger');
         const chatMessages = document.getElementById('chatMessages');
@@ -712,13 +821,69 @@
             localStorage.setItem('idi_font', e.target.value);
         });
 
+        // ВСПУХИВАНИЕ КАРТИНКИ В ТЕКСТ (Base64)
+        function convertFileToBase64(file, maxWidth = 250, maxHeight = 250) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > height) {
+                            if (width > maxWidth) {
+                                height = Math.round((height * maxWidth) / width);
+                                width = maxWidth;
+                            }
+                        } else {
+                            if (height > maxHeight) {
+                                width = Math.round((width * maxHeight) / height);
+                                height = maxHeight;
+                            }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        // Возвращаем сжатый текст картинки
+                        resolve(canvas.toDataURL('image/webp', 0.8));
+                    };
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
         function renderAvatar(element, avatarData) {
-            if (avatarData && (avatarData.startsWith('http://') || avatarData.startsWith('https://'))) {
+            if (avatarData && (avatarData.startsWith('data:image/') || avatarData.startsWith('http://') || avatarData.startsWith('https://'))) {
                 element.innerHTML = `<img src="${avatarData}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
             } else {
                 element.innerText = avatarData || '🐱';
             }
         }
+
+        // Загрузка фото для Аватарки при входе
+        document.getElementById('authAvatarFile').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const base64Text = await convertFileToBase64(file, 150, 150);
+                document.getElementById('authAvatar').value = base64Text;
+            }
+        });
+
+        // Загрузка фото для Аватарки в настройках
+        document.getElementById('avatarFileInput').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const base64Text = await convertFileToBase64(file, 150, 150);
+                document.getElementById('setAvatarInput').value = base64Text;
+            }
+        });
 
         document.getElementById('startBtn').addEventListener('click', async () => {
             const user = document.getElementById('authUsername').value.trim();
@@ -746,8 +911,8 @@
             loadUsersList();
             openChat('global', 'Общий чат страны', '📢');
             setupTypingEvents();
+            loadStickers('general');
 
-            // Живое слежение за статусом для обновлений шапки
             onValue(ref(database, 'status'), () => {
                 updateHeaderStatus();
             });
@@ -806,7 +971,6 @@
                     chatsList.appendChild(chatItem);
                     renderAvatar(document.getElementById('avatar-col-' + username), data.avatar);
 
-                    // Онлайн статус в списке чатов
                     onValue(ref(database, 'status/' + username), (snap) => {
                         const statusData = snap.val();
                         const dot = document.getElementById('dot-' + username);
@@ -818,7 +982,6 @@
                         }
                     });
 
-                    // Печатает... в боковом меню ЛС
                     onValue(ref(database, `typing/${username}/${username}`), (snap) => {
                         const isTyping = snap.val();
                         const sub = document.getElementById('sub-' + username);
@@ -833,7 +996,6 @@
                 }
             });
 
-            // Печатает... в боковом меню Общего чата
             onValue(ref(database, `typing/global`), (snap) => {
                 const typers = snap.val() || {};
                 const activeTypers = Object.keys(typers).filter(u => u !== currentUser && typers[u]);
@@ -853,7 +1015,6 @@
             });
         }
 
-        // --- ОТОБРАЖЕНИЕ "ПЕЧАТАЕТ..." В ЛЕНТЕ СООБЩЕНИЙ ВНИЗУ ---
         function toggleInMessageTyping(authorName, isTyping) {
             const typingRow = document.getElementById('typingIndicatorRow');
             const typingAvatar = document.getElementById('typingAvatar');
@@ -870,7 +1031,6 @@
             }
         }
 
-        // --- ТОЧНЫЙ СТАТУС В ШАПКЕ ---
         function updateHeaderStatus() {
             const statusEl = document.getElementById('activeChatStatus');
 
@@ -928,7 +1088,7 @@
                 if (msgEl) {
                     const data = snapshot.val();
                     const textContainer = msgEl.querySelector('.msg-text');
-                    if (textContainer) {
+                    if (textContainer && !data.sticker) {
                         textContainer.innerHTML = `${data.text} <span class="edited-tag">(изм.)</span>`;
                     }
                 }
@@ -962,29 +1122,34 @@
                 `;
             }
 
-            let textContent = data.text;
+            let mainContent = `<div class="msg-text">${data.text || ''} ${data.isEdited ? '<span class="edited-tag">(изм.)</span>' : ''}</div>`;
+            
+            if (data.sticker) {
+                mainContent = `<img src="${data.sticker}" class="sticker-img">`;
+            }
+
             let gameHTML = '';
             const hasPlayed = playedGames.includes(msgId);
 
-            if (textContent.trim() === '🎰') {
+            if (data.text === '🎰') {
                 const gameId = 'game-' + msgId;
                 gameHTML = `<div class="interactive-box" id="box-${gameId}"><div class="game-display" id="${gameId}">🎰 🎰 🎰</div><div class="game-status" id="${gameId}-status">...</div></div>`;
-                textContent = '';
+                mainContent = '';
                 const gameResult = data.gameResult || data.casinoResult; 
                 setTimeout(() => handleCasinoLogic(gameId, gameResult, msgId, hasPlayed), 100);
             }
 
-            if (textContent.trim() === '⚽') {
+            if (data.text === '⚽') {
                 const gameId = 'game-' + msgId;
                 gameHTML = `<div class="interactive-box" id="box-${gameId}"><div class="game-display" id="${gameId}">🥅 🧤 ⚽</div><div class="game-status" id="${gameId}-status">Удар...</div></div>`;
-                textContent = '';
+                mainContent = '';
                 setTimeout(() => handleFootballLogic(gameId, data.gameResult, msgId, hasPlayed), 100);
             }
 
             bubble.innerHTML = `
                 <div class="msg-author">${data.author}</div>
                 ${replyHTML}
-                <div class="msg-text">${textContent} ${data.isEdited ? '<span class="edited-tag">(изм.)</span>' : ''}</div>
+                ${mainContent}
                 ${gameHTML}
                 <div class="msg-time">${data.time}</div>
             `;
@@ -1007,7 +1172,85 @@
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        // --- КЛИК ПО ШАПКЕ ЧАТА (ПОКАЗАТЬ КТО ОНЛАЙН) ---
+        // --- ЛОГИКА СТИКЕРОВ ---
+        const stickersPanel = document.getElementById('stickersPanel');
+        const stickersGrid = document.getElementById('stickersGrid');
+        const packCreateArea = document.getElementById('packCreateArea');
+        let currentStickerTab = 'general';
+
+        document.getElementById('toggleStickersBtn').addEventListener('click', () => {
+            stickersPanel.classList.toggle('active');
+        });
+
+        document.getElementById('tabGeneralStickers').addEventListener('click', (e) => {
+            document.querySelectorAll('.sticker-tab-btn').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            packCreateArea.style.display = 'none';
+            currentStickerTab = 'general';
+            loadStickers('general');
+        });
+
+        document.getElementById('tabMyPackStickers').addEventListener('click', (e) => {
+            document.querySelectorAll('.sticker-tab-btn').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            packCreateArea.style.display = 'flex';
+            currentStickerTab = 'my';
+            loadStickers('my');
+        });
+
+        // Загрузка файла стикера (переработка картинки в текст)
+        document.getElementById('stickerFileInput').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            const packName = document.getElementById('packNameInput').value.trim() || 'Мой пак';
+
+            if (file) {
+                const stickerText = await convertFileToBase64(file, 200, 200);
+                push(ref(database, `sticker_packs/${currentUser}/${packName}`), stickerText);
+                loadStickers('my');
+            }
+        });
+
+        function loadStickers(type) {
+            stickersGrid.innerHTML = '';
+
+            if (type === 'general') {
+                // Общие встроенные стикеры
+                onValue(ref(database, 'sticker_packs/general'), (snap) => {
+                    const data = snap.val() || {};
+                    stickersGrid.innerHTML = '';
+                    Object.values(data).forEach(url => {
+                        const img = document.createElement('img');
+                        img.className = 'sticker-item';
+                        img.src = url;
+                        img.addEventListener('click', () => sendSticker(url));
+                        stickersGrid.appendChild(img);
+                    });
+                });
+            } else {
+                // Пользовательские стикеры
+                onValue(ref(database, `sticker_packs/${currentUser}`), (snap) => {
+                    const packs = snap.val() || {};
+                    stickersGrid.innerHTML = '';
+                    Object.keys(packs).forEach(packName => {
+                        const items = packs[packName];
+                        Object.values(items).forEach(url => {
+                            const img = document.createElement('img');
+                            img.className = 'sticker-item';
+                            img.src = url;
+                            img.addEventListener('click', () => sendSticker(url));
+                            stickersGrid.appendChild(img);
+                        });
+                    });
+                });
+            }
+        }
+
+        function sendSticker(stickerBase64) {
+            sendDirectMessage('', stickerBase64);
+            stickersPanel.classList.remove('active');
+        }
+
+        // МОДАЛКА КТО В СЕТИ
         const onlineModalOverlay = document.getElementById('onlineModalOverlay');
         const onlineModalList = document.getElementById('onlineModalList');
 
@@ -1087,10 +1330,10 @@
             selectedMsgData = msgData;
 
             document.getElementById('replyBarAuthor').innerText = msgData.author;
-            document.getElementById('replyBarText').innerText = msgData.text || 'Игра';
+            document.getElementById('replyBarText').innerText = msgData.sticker ? '🖼️ Стикер' : (msgData.text || 'Игра');
 
             repeatGameBtn.style.display = (msgData.text === '🎰' || msgData.text === '⚽') ? 'block' : 'none';
-            editMsgBtn.style.display = (msgData.author === currentUser && msgData.text !== '🎰' && msgData.text !== '⚽') ? 'block' : 'none';
+            editMsgBtn.style.display = (msgData.author === currentUser && msgData.text !== '🎰' && msgData.text !== '⚽' && !msgData.sticker) ? 'block' : 'none';
             deleteMsgBtn.style.display = (msgData.author === currentUser) ? 'block' : 'none';
 
             replyBar.classList.add('active');
@@ -1244,8 +1487,8 @@
 
         document.getElementById('cancelReplyBtn').addEventListener('click', cancelReply);
 
-        function sendDirectMessage(text) {
-            if (!text || !currentUser) return;
+        function sendDirectMessage(text, stickerData = null) {
+            if ((!text && !stickerData) || !currentUser) return;
 
             let chatDbPath = 'global_chat';
             if (activeChatId !== 'global') {
@@ -1270,6 +1513,10 @@
                 time: time
             };
 
+            if (stickerData) {
+                msgObject.sticker = stickerData;
+            }
+
             if (text === '🎰') {
                 const symbols = ['🍋', '🍒', '7️⃣', '🍇'];
                 msgObject.gameResult = [symbols[Math.floor(Math.random() * 4)], symbols[Math.floor(Math.random() * 4)], symbols[Math.floor(Math.random() * 4)]];
@@ -1280,7 +1527,7 @@
             if (selectedMsgData) {
                 msgObject.replyTo = {
                     author: selectedMsgData.author,
-                    text: selectedMsgData.text || 'Игра',
+                    text: selectedMsgData.sticker ? '🖼️ Стикер' : (selectedMsgData.text || 'Игра'),
                     msgId: selectedMsgData.msgId || null
                 };
             }
