@@ -466,7 +466,6 @@
             font-weight: bold;
         }
 
-        /* --- ПАНЕЛЬ СТИКЕРОВ --- */
         .stickers-panel {
             position: absolute;
             bottom: 60px;
@@ -567,7 +566,6 @@
             border: 1px solid var(--border-color);
         }
 
-        /* --- МОДАЛЬНОЕ ОКНО "КТО В СЕТИ" --- */
         .online-modal-overlay {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -627,7 +625,7 @@
 
         <!-- ШТОРКА НАСТРОЕК -->
         <div class="sidebar-drawer" id="sidebarDrawer">
-            <h3>⚙️ Настройки</h3>
+            <h3>⚙️ Настройки аккаунта</h3>
             
             <div style="text-align: center; margin: 5px 0;">
                 <div id="drawerAvatar" class="chat-item-avatar" style="width:65px; height:65px; margin:0 auto; font-size:1.8rem;">🐱</div>
@@ -659,24 +657,23 @@
                 <label>Размер текста:</label>
                 <select id="fontSelect" class="setting-select">
                     <option value="font-small">Мелкий</option>
-                    <option value="font-medium" selected>Средний</option>
+                    <option value="font-medium">Средний</option>
                     <option value="font-large">Крупный</option>
                 </select>
             </div>
 
             <div style="flex:1;"></div>
-            <button class="auth-btn" id="logoutBtn" style="opacity: 0.8;">Выйти</button>
+            <button class="auth-btn" id="logoutBtn" style="opacity: 0.8;">Выйти с аккаунта</button>
         </div>
 
         <!-- ЭКРАН ВХОДА -->
         <div class="auth-screen" id="authScreen">
             <h2>🐾 Мир Идиаканта</h2>
             <input type="text" id="authUsername" class="auth-input" placeholder="Логин (Никнейм)">
-            <input type="password" id="authPassword" class="auth-input" placeholder="Пароль">
             
             <div style="width:100%; max-width:280px; text-align:center;">
                 <input type="text" id="authAvatar" class="auth-input" placeholder="Аватар (Эмодзи)">
-                <div style="margin: 5px 0; font-size:0.8rem; opacity:0.7;">или загрузи фото:</div>
+                <div style="margin: 5px 0; font-size:0.8rem; opacity:0.7;">или загрузи фото профиля:</div>
                 <label class="file-upload-btn" style="width:100%;">
                     📁 Фото профиля (в текст)
                     <input type="file" id="authAvatarFile" accept="image/*" style="display:none;">
@@ -715,13 +712,11 @@
 
             <div class="chat-messages" id="chatMessages"></div>
 
-            <!-- ИНДИКАТОР ПЕЧАТИ В ЛЕНТЕ -->
             <div class="typing-indicator-row" id="typingIndicatorRow">
                 <div class="msg-avatar" id="typingAvatar">✍️</div>
                 <div class="typing-bubble" id="typingText">кто-то печатает...</div>
             </div>
 
-            <!-- ПАНЕЛЬ СТИКЕРОВ -->
             <div class="stickers-panel" id="stickersPanel">
                 <div class="stickers-tabs">
                     <button class="sticker-tab-btn active" id="tabGeneralStickers">📢 Общие</button>
@@ -763,7 +758,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, push, onChildAdded, onChildChanged, onChildRemoved, onValue, set, remove, update, onDisconnect, off } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, push, onChildAdded, onChildChanged, onChildRemoved, onValue, set, remove, update, onDisconnect, off, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyByKktnwPbg1zBU4wYR8hceDc57BR0Y4Zo",
@@ -780,7 +775,11 @@
         const database = getDatabase(app);
 
         let currentUser = localStorage.getItem('idi_user') || '';
-        let currentAvatar = localStorage.getItem('idi_avatar') || '🐱';
+        let currentAvatar = '🐱';
+        let currentTheme = 'theme-classic';
+        let currentFont = 'font-medium';
+        let playedGames = [];
+
         let activeChatId = 'global';
         let currentChatRef = null;
         let allUsersData = {};
@@ -789,9 +788,7 @@
         let editingMsgId = null;
         let typingTimeout = null;
 
-        let playedGames = JSON.parse(localStorage.getItem('idi_played_games') || '[]');
-
-        // Элементы UI
+        // UI Элементы
         const authScreen = document.getElementById('authScreen');
         const messenger = document.getElementById('messenger');
         const chatMessages = document.getElementById('chatMessages');
@@ -804,25 +801,34 @@
 
         const themeSelect = document.getElementById('themeSelect');
         const fontSelect = document.getElementById('fontSelect');
-        const savedTheme = localStorage.getItem('idi_theme') || 'theme-classic';
-        const savedFont = localStorage.getItem('idi_font') || 'font-medium';
 
-        document.body.className = `${savedTheme} ${savedFont}`;
-        themeSelect.value = savedTheme;
-        fontSelect.value = savedFont;
+        // Функция применения темы и шрифта на клиенте
+        function applyVisualSettings(theme, font) {
+            currentTheme = theme || 'theme-classic';
+            currentFont = font || 'font-medium';
+            document.body.className = `${currentTheme} ${currentFont}`;
+            themeSelect.value = currentTheme;
+            fontSelect.value = currentFont;
+        }
 
-        themeSelect.addEventListener('change', (e) => {
-            document.body.className = `${e.target.value} ${fontSelect.value}`;
-            localStorage.setItem('idi_theme', e.target.value);
+        // Авто-сохранение выбранной темы в Firebase (доступно со всех устройств)
+        themeSelect.addEventListener('change', async (e) => {
+            applyVisualSettings(e.target.value, currentFont);
+            if (currentUser) {
+                await update(ref(database, `users/${currentUser}/settings`), { theme: e.target.value });
+            }
         });
 
-        fontSelect.addEventListener('change', (e) => {
-            document.body.className = `${themeSelect.value} ${e.target.value}`;
-            localStorage.setItem('idi_font', e.target.value);
+        // Авто-сохранение выбранного шрифта в Firebase
+        fontSelect.addEventListener('change', async (e) => {
+            applyVisualSettings(currentTheme, e.target.value);
+            if (currentUser) {
+                await update(ref(database, `users/${currentUser}/settings`), { font: e.target.value });
+            }
         });
 
-        // ВСПУХИВАНИЕ КАРТИНКИ В ТЕКСТ (Base64)
-        function convertFileToBase64(file, maxWidth = 250, maxHeight = 250) {
+        // Конвертер изображений в сжатый Текст (Base64)
+        function convertFileToBase64(file, maxWidth = 200, maxHeight = 200) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.onload = (e) => {
@@ -848,8 +854,6 @@
                         canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
-                        
-                        // Возвращаем сжатый текст картинки
                         resolve(canvas.toDataURL('image/webp', 0.8));
                     };
                     img.src = e.target.result;
@@ -867,7 +871,7 @@
             }
         }
 
-        // Загрузка фото для Аватарки при входе
+        // Загрузка фото в текст при входе
         document.getElementById('authAvatarFile').addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (file) {
@@ -876,7 +880,7 @@
             }
         });
 
-        // Загрузка фото для Аватарки в настройках
+        // Загрузка фото в текст из настроек
         document.getElementById('avatarFileInput').addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (file) {
@@ -885,28 +889,58 @@
             }
         });
 
+        // Вход в аккаунт и загрузка его конфигурации из облака
         document.getElementById('startBtn').addEventListener('click', async () => {
             const user = document.getElementById('authUsername').value.trim();
-            const avatar = document.getElementById('authAvatar').value.trim() || '🐱';
+            const inputAvatar = document.getElementById('authAvatar').value.trim();
 
-            if (user) {
-                currentUser = user;
-                currentAvatar = avatar;
-                localStorage.setItem('idi_user', user);
-                localStorage.setItem('idi_avatar', avatar);
-
-                await set(ref(database, 'users/' + user), { avatar: avatar });
-                initApp();
-            } else {
+            if (!user) {
                 alert("Введите никнейм!");
+                return;
             }
+
+            currentUser = user;
+            localStorage.setItem('idi_user', user);
+
+            // Читаем аккаунт пользователя из Firebase Database
+            const userSnap = await get(ref(database, `users/${user}`));
+            let userData = userSnap.val() || {};
+
+            currentAvatar = inputAvatar || userData.avatar || '🐱';
+            const settings = userData.settings || {};
+
+            // Записываем обновленные данные аватара и настроек по умолчанию в облако
+            await update(ref(database, `users/${user}`), {
+                avatar: currentAvatar,
+                settings: {
+                    theme: settings.theme || 'theme-classic',
+                    font: settings.font || 'font-medium'
+                }
+            });
+
+            applyVisualSettings(settings.theme, settings.font);
+            initApp();
         });
 
         function initApp() {
             authScreen.style.display = 'none';
             document.getElementById('drawerUsername').innerText = currentUser;
-            renderAvatar(document.getElementById('drawerAvatar'), currentAvatar);
             
+            // Настройка подписки на изменения своего аккаунта в реальном времени
+            onValue(ref(database, `users/${currentUser}`), (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    currentAvatar = data.avatar || '🐱';
+                    renderAvatar(document.getElementById('drawerAvatar'), currentAvatar);
+                    if (data.settings) {
+                        applyVisualSettings(data.settings.theme, data.settings.font);
+                    }
+                    if (data.playedGames) {
+                        playedGames = data.playedGames;
+                    }
+                }
+            });
+
             setupPresence();
             loadUsersList();
             openChat('global', 'Общий чат страны', '📢');
@@ -970,6 +1004,14 @@
 
                     chatsList.appendChild(chatItem);
                     renderAvatar(document.getElementById('avatar-col-' + username), data.avatar);
+
+                    // Синхронизация аватарок других собеседников при их обновлении
+                    onValue(ref(database, `users/${username}/avatar`), (avatarSnap) => {
+                        const newAvatar = avatarSnap.val();
+                        allUsersData[username].avatar = newAvatar;
+                        const col = document.getElementById('avatar-col-' + username);
+                        if (col) renderAvatar(col, newAvatar);
+                    });
 
                     onValue(ref(database, 'status/' + username), (snap) => {
                         const statusData = snap.val();
@@ -1172,11 +1214,10 @@
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        // --- ЛОГИКА СТИКЕРОВ ---
+        // --- ПАНЕЛЬ СТИКЕРОВ ---
         const stickersPanel = document.getElementById('stickersPanel');
         const stickersGrid = document.getElementById('stickersGrid');
         const packCreateArea = document.getElementById('packCreateArea');
-        let currentStickerTab = 'general';
 
         document.getElementById('toggleStickersBtn').addEventListener('click', () => {
             stickersPanel.classList.toggle('active');
@@ -1186,7 +1227,6 @@
             document.querySelectorAll('.sticker-tab-btn').forEach(b => b.classList.remove('active'));
             e.target.classList.add('active');
             packCreateArea.style.display = 'none';
-            currentStickerTab = 'general';
             loadStickers('general');
         });
 
@@ -1194,11 +1234,9 @@
             document.querySelectorAll('.sticker-tab-btn').forEach(b => b.classList.remove('active'));
             e.target.classList.add('active');
             packCreateArea.style.display = 'flex';
-            currentStickerTab = 'my';
             loadStickers('my');
         });
 
-        // Загрузка файла стикера (переработка картинки в текст)
         document.getElementById('stickerFileInput').addEventListener('change', async (e) => {
             const file = e.target.files[0];
             const packName = document.getElementById('packNameInput').value.trim() || 'Мой пак';
@@ -1214,7 +1252,6 @@
             stickersGrid.innerHTML = '';
 
             if (type === 'general') {
-                // Общие встроенные стикеры
                 onValue(ref(database, 'sticker_packs/general'), (snap) => {
                     const data = snap.val() || {};
                     stickersGrid.innerHTML = '';
@@ -1227,7 +1264,6 @@
                     });
                 });
             } else {
-                // Пользовательские стикеры
                 onValue(ref(database, `sticker_packs/${currentUser}`), (snap) => {
                     const packs = snap.val() || {};
                     stickersGrid.innerHTML = '';
@@ -1250,7 +1286,7 @@
             stickersPanel.classList.remove('active');
         }
 
-        // МОДАЛКА КТО В СЕТИ
+        // МОДАЛКА ОНЛАЙН ИГРОКОВ
         const onlineModalOverlay = document.getElementById('onlineModalOverlay');
         const onlineModalList = document.getElementById('onlineModalList');
 
@@ -1437,9 +1473,12 @@
             }, 120);
         }
 
+        // Синхронизация сыгранных игр с облаком аккаунта
         function savePlayedGame(msgId) {
-            playedGames.push(msgId);
-            localStorage.setItem('idi_played_games', JSON.stringify(playedGames));
+            if (!playedGames.includes(msgId)) {
+                playedGames.push(msgId);
+                update(ref(database, `users/${currentUser}`), { playedGames: playedGames });
+            }
         }
 
         repeatGameBtn.addEventListener('click', () => {
@@ -1568,11 +1607,10 @@
             overlay.classList.remove('active');
         });
 
+        // Сохранение аватара в базу данных (автоматом обновит все подключенные устройства)
         document.getElementById('saveAvatarBtn').addEventListener('click', async () => {
             currentAvatar = document.getElementById('setAvatarInput').value.trim() || '🐱';
-            localStorage.setItem('idi_avatar', currentAvatar);
-            await set(ref(database, 'users/' + currentUser), { avatar: currentAvatar });
-            renderAvatar(document.getElementById('drawerAvatar'), currentAvatar);
+            await update(ref(database, 'users/' + currentUser), { avatar: currentAvatar });
             drawer.classList.remove('active');
             overlay.classList.remove('active');
         });
@@ -1585,7 +1623,15 @@
             location.reload();
         });
 
-        if (currentUser) initApp();
+        if (currentUser) {
+            get(ref(database, `users/${currentUser}`)).then((userSnap) => {
+                const userData = userSnap.val() || {};
+                currentAvatar = userData.avatar || '🐱';
+                const settings = userData.settings || {};
+                applyVisualSettings(settings.theme, settings.font);
+                initApp();
+            });
+        }
     </script>
 </body>
 </html>
