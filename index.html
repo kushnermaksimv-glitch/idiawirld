@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Мессенджер «Мир Идиаканта»</title>
     <style>
-        /* --- Переменные тем оформления --- */
         :root {
             --bg-body: #2c1d11;
             --bg-container: #fff8f0;
@@ -22,7 +21,6 @@
             --font-size-msg: 0.9rem;
         }
 
-        /* Темная тема */
         body.theme-dark {
             --bg-body: #121212;
             --bg-container: #1e1e1e;
@@ -38,7 +36,6 @@
             --border-color: #333333;
         }
 
-        /* Светлая тема */
         body.theme-light {
             --bg-body: #e0e6ed;
             --bg-container: #ffffff;
@@ -54,7 +51,6 @@
             --border-color: #bccadc;
         }
 
-        /* Неоновая тема */
         body.theme-neon {
             --bg-body: #050515;
             --bg-container: #0a0a23;
@@ -70,7 +66,6 @@
             --border-color: #ff007f;
         }
 
-        /* --- Размеры шрифтов --- */
         body.font-small { --font-size-msg: 0.8rem; }
         body.font-medium { --font-size-msg: 0.95rem; }
         body.font-large { --font-size-msg: 1.1rem; }
@@ -80,6 +75,7 @@
             margin: 0;
             padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
         }
 
         body {
@@ -89,7 +85,6 @@
             align-items: center;
             min-height: 100vh;
             padding: 10px;
-            transition: background 0.3s;
         }
 
         .messenger-container {
@@ -105,7 +100,7 @@
             position: relative;
         }
 
-        /* --- БОКОВАЯ ПАНЕЛЬ С НАСТРОЙКАМИ (Drawer) --- */
+        /* --- БОКОВАЯ ПАНЕЛЬ С НАСТРОЙКАМИ --- */
         .sidebar-drawer {
             position: absolute;
             top: 0; left: -300px;
@@ -115,7 +110,6 @@
             color: var(--text-main);
             z-index: 30;
             border-right: 2px solid var(--border-color);
-            box-shadow: 5px 0 15px rgba(0,0,0,0.3);
             transition: left 0.3s ease;
             display: flex;
             flex-direction: column;
@@ -144,11 +138,6 @@
             padding-bottom: 10px;
         }
 
-        .setting-group label {
-            font-size: 0.85rem;
-            font-weight: bold;
-        }
-
         .setting-select {
             padding: 8px;
             border-radius: 6px;
@@ -158,7 +147,7 @@
             outline: none;
         }
 
-        /* --- ЛЕВАЯ КОЛОНКА (СПИСОК ЧАТОВ) --- */
+        /* --- СПИСОК ЧАТОВ --- */
         .chats-list-panel {
             width: 320px;
             background-color: var(--bg-chats-list);
@@ -213,27 +202,11 @@
             overflow: hidden;
         }
 
-        .chat-item-info {
-            flex: 1;
-            overflow: hidden;
-        }
+        .chat-item-info { flex: 1; overflow: hidden; }
+        .chat-item-title { font-weight: bold; color: var(--text-main); font-size: 0.95rem; }
+        .chat-item-sub { font-size: 0.8rem; opacity: 0.7; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        .chat-item-title {
-            font-weight: bold;
-            color: var(--text-main);
-            font-size: 0.95rem;
-        }
-
-        .chat-item-sub {
-            font-size: 0.8rem;
-            opacity: 0.7;
-            color: var(--text-main);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        /* --- ПРАВАЯ КОЛОНКА (ОКНО ЧАТА) --- */
+        /* --- ОКНО ЧАТА --- */
         .chat-window {
             flex: 1;
             display: flex;
@@ -267,12 +240,18 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
+            overflow-x: hidden;
         }
 
+        /* --- СООБЩЕНИЯ И СВАЙП --- */
         .message-row {
             display: flex;
             gap: 8px;
-            max-width: 80%;
+            max-width: 85%;
+            position: relative;
+            touch-action: pan-y;
+            transition: transform 0.1s ease-out;
+            cursor: grab;
         }
 
         .message-row.my-msg {
@@ -301,6 +280,7 @@
             border-radius: 12px;
             font-size: var(--font-size-msg);
             word-break: break-word;
+            position: relative;
         }
 
         .my-msg .msg-bubble {
@@ -308,19 +288,59 @@
             color: var(--text-my);
         }
 
-        .msg-author {
+        .msg-author { font-size: 0.75rem; font-weight: bold; opacity: 0.8; margin-bottom: 2px; }
+        .msg-time { font-size: 0.65rem; opacity: 0.7; text-align: right; margin-top: 3px; }
+
+        /* Блок отвеченного сообщения */
+        .reply-preview-bubble {
+            background: rgba(0,0,0,0.15);
+            border-left: 3px solid var(--border-color);
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            font-size: 0.8rem;
+        }
+        .reply-author { font-weight: bold; font-size: 0.75rem; }
+
+        /* --- СЛОТ МАТРИЦА (КАЗИНО) --- */
+        .casino-box {
+            background: #111;
+            color: #fff;
+            padding: 10px;
+            border-radius: 10px;
+            border: 2px solid #ffd700;
+            text-align: center;
+            display: inline-block;
+            margin-top: 5px;
+        }
+        .casino-reels {
+            font-size: 1.8rem;
+            letter-spacing: 5px;
+            background: #222;
+            padding: 5px 10px;
+            border-radius: 6px;
+            border: 1px solid #444;
+        }
+        .casino-status {
             font-size: 0.75rem;
+            color: #ffd700;
+            margin-top: 4px;
             font-weight: bold;
-            opacity: 0.8;
-            margin-bottom: 2px;
         }
 
-        .msg-time {
-            font-size: 0.65rem;
-            opacity: 0.7;
-            text-align: right;
-            margin-top: 3px;
+        /* ПАНЕЛЬ ОТВЕТА НА СООБЩЕНИЕ */
+        .reply-bar {
+            display: none;
+            background: var(--bg-chats-list);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-top: 1px solid var(--border-color);
+            align-items: center;
+            justify-content: space-between;
         }
+        .reply-bar.active { display: flex; }
+        .reply-bar-info { border-left: 3px solid var(--border-color); padding-left: 8px; }
+        .close-reply-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-main); }
 
         .chat-input-area {
             display: flex;
@@ -338,6 +358,7 @@
             background: var(--bg-window);
             color: var(--text-main);
             outline: none;
+            user-select: text;
         }
 
         .chat-input-area button {
@@ -350,7 +371,7 @@
             font-weight: bold;
         }
 
-        /* --- ЭКРАН АВТОРИЗАЦИИ --- */
+        /* --- АВТОРИЗАЦИЯ --- */
         .auth-screen {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -374,6 +395,7 @@
             background: var(--bg-window);
             color: var(--text-main);
             outline: none;
+            user-select: text;
         }
 
         .auth-btn {
@@ -388,7 +410,6 @@
             font-weight: bold;
         }
 
-        /* Адаптив под мобильные */
         @media (max-width: 650px) {
             .chats-list-panel { width: 100%; }
             .chat-window { display: none; width: 100%; }
@@ -402,10 +423,9 @@
 
     <div class="messenger-container" id="messenger">
         
-        <!-- Затемнение -->
         <div class="drawer-overlay" id="drawerOverlay"></div>
 
-        <!-- Выезжающее левое меню -->
+        <!-- Выезжающее меню -->
         <div class="sidebar-drawer" id="sidebarDrawer">
             <h3>⚙️ Настройки</h3>
             
@@ -420,7 +440,6 @@
                 <button class="auth-btn" id="saveAvatarBtn" style="margin-top:5px;">Сохранить фото</button>
             </div>
 
-            <!-- НАСТРОЙКИ ТЕМ И ШРИФТОВ -->
             <div class="setting-group">
                 <label>Тема оформления:</label>
                 <select id="themeSelect" class="setting-select">
@@ -441,10 +460,10 @@
             </div>
 
             <div style="flex:1;"></div>
-            <button class="auth-btn" id="logoutBtn" style="opacity: 0.8;">Выйти из аккаунта</button>
+            <button class="auth-btn" id="logoutBtn" style="opacity: 0.8;">Выйти</button>
         </div>
 
-        <!-- Экран авторизации -->
+        <!-- Экран входа -->
         <div class="auth-screen" id="authScreen">
             <h2>🐾 Мир Идиаканта</h2>
             <input type="text" id="authUsername" class="auth-input" placeholder="Логин (Никнейм)">
@@ -453,7 +472,7 @@
             <button class="auth-btn" id="startBtn">Войти в Мессенджер</button>
         </div>
 
-        <!-- Список чатов (Слева) -->
+        <!-- Левая панель -->
         <div class="chats-list-panel">
             <div class="chats-header">
                 <button class="menu-btn" id="openMenuBtn">☰</button>
@@ -461,7 +480,6 @@
             </div>
             
             <div id="chatsList" style="overflow-y: auto; flex:1;">
-                <!-- Общий чат -->
                 <div class="chat-item active" id="globalChatItem">
                     <div class="chat-item-avatar">📢</div>
                     <div class="chat-item-info">
@@ -472,7 +490,7 @@
             </div>
         </div>
 
-        <!-- Окно чата (Справа) -->
+        <!-- Окно сообщений -->
         <div class="chat-window">
             <div class="chat-window-header">
                 <button class="back-btn" id="backBtn">◄</button>
@@ -483,6 +501,15 @@
             </div>
 
             <div class="chat-messages" id="chatMessages"></div>
+
+            <!-- Панель ответа на сообщение -->
+            <div class="reply-bar" id="replyBar">
+                <div class="reply-bar-info">
+                    <div id="replyBarAuthor" style="font-weight:bold; font-size:0.75rem;">Автор</div>
+                    <div id="replyBarText" style="font-size:0.8rem; opacity:0.8;">Текст сообщения</div>
+                </div>
+                <button class="close-reply-btn" id="cancelReplyBtn">✕</button>
+            </div>
 
             <form class="chat-input-area" id="chatForm">
                 <input type="text" id="userInput" placeholder="Напишите сообщение..." autocomplete="off" required>
@@ -513,17 +540,18 @@
         let currentUser = localStorage.getItem('idi_user') || '';
         let currentAvatar = localStorage.getItem('idi_avatar') || '🐱';
         let activeChatId = 'global';
-        let currentChatRef = null; // Отслеживание текущего слушателя
+        let currentChatRef = null;
+        let selectedReplyMsg = null; // Для хранения сообщения, на которое отвечаем
 
         const authScreen = document.getElementById('authScreen');
         const messenger = document.getElementById('messenger');
         const chatMessages = document.getElementById('chatMessages');
         const chatsList = document.getElementById('chatsList');
+        const replyBar = document.getElementById('replyBar');
 
-        // Применение темы и шрифтов
+        // Темы
         const themeSelect = document.getElementById('themeSelect');
         const fontSelect = document.getElementById('fontSelect');
-
         const savedTheme = localStorage.getItem('idi_theme') || 'theme-classic';
         const savedFont = localStorage.getItem('idi_font') || 'font-medium';
 
@@ -532,15 +560,13 @@
         fontSelect.value = savedFont;
 
         themeSelect.addEventListener('change', (e) => {
-            const newTheme = e.target.value;
-            document.body.className = `${newTheme} ${fontSelect.value}`;
-            localStorage.setItem('idi_theme', newTheme);
+            document.body.className = `${e.target.value} ${fontSelect.value}`;
+            localStorage.setItem('idi_theme', e.target.value);
         });
 
         fontSelect.addEventListener('change', (e) => {
-            const newFont = e.target.value;
-            document.body.className = `${themeSelect.value} ${newFont}`;
-            localStorage.setItem('idi_font', newFont);
+            document.body.className = `${themeSelect.value} ${e.target.value}`;
+            localStorage.setItem('idi_font', e.target.value);
         });
 
         function renderAvatar(element, avatarData) {
@@ -573,12 +599,10 @@
             authScreen.style.display = 'none';
             document.getElementById('drawerUsername').innerText = currentUser;
             renderAvatar(document.getElementById('drawerAvatar'), currentAvatar);
-            
             loadUsersList();
             openChat('global', 'Общий чат страны', '📢');
         }
 
-        // Загрузка участников ЛС
         function loadUsersList() {
             onChildAdded(ref(database, 'users'), (snapshot) => {
                 const username = snapshot.key;
@@ -608,22 +632,18 @@
             });
         }
 
-        // Открытие чата без двоения сообщений!
+        // Открытие чата
         function openChat(chatId, title, avatar) {
             activeChatId = chatId;
             document.getElementById('activeChatTitle').innerText = title;
             renderAvatar(document.getElementById('activeChatAvatar'), avatar);
             
-            // 1. Очистка списка сообщений
             chatMessages.innerHTML = '';
             messenger.classList.add('open-chat');
+            cancelReply();
 
-            // 2. ОТКЛЮЧЕНИЕ старого слушателя (решает проблему дублирования)
-            if (currentChatRef) {
-                off(currentChatRef);
-            }
+            if (currentChatRef) off(currentChatRef);
 
-            // 3. Выбор пути к базе
             let chatDbPath = 'global_chat';
             if (chatId !== 'global') {
                 const pair = [currentUser, chatId].sort().join('_');
@@ -632,39 +652,164 @@
 
             currentChatRef = ref(database, chatDbPath);
 
-            // 4. Подписка на единственное событие
             onChildAdded(currentChatRef, (snapshot) => {
                 const data = snapshot.val();
-                
-                const row = document.createElement('div');
-                row.className = `message-row ${data.author === currentUser ? 'my-msg' : ''}`;
-
-                const avatarDiv = document.createElement('div');
-                avatarDiv.className = 'msg-avatar';
-                renderAvatar(avatarDiv, data.avatar);
-
-                const bubble = document.createElement('div');
-                bubble.className = 'msg-bubble';
-                bubble.innerHTML = `
-                    <div class="msg-author">${data.author}</div>
-                    <div>${data.text}</div>
-                    <div class="msg-time">${data.time}</div>
-                `;
-
-                row.appendChild(avatarDiv);
-                row.appendChild(bubble);
-
-                chatMessages.appendChild(row);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
+                renderSingleMessage(data);
             });
         }
 
-        // Общий чат
-        document.getElementById('globalChatItem').addEventListener('click', () => {
-            document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
-            document.getElementById('globalChatItem').classList.add('active');
-            openChat('global', 'Общий чат страны', '📢');
-        });
+        // Отрисовка сообщения
+        function renderSingleMessage(data) {
+            const row = document.createElement('div');
+            row.className = `message-row ${data.author === currentUser ? 'my-msg' : ''}`;
+
+            const avatarDiv = document.createElement('div');
+            avatarDiv.className = 'msg-avatar';
+            renderAvatar(avatarDiv, data.avatar);
+
+            const bubble = document.createElement('div');
+            bubble.className = 'msg-bubble';
+
+            let replyHTML = '';
+            if (data.replyTo) {
+                replyHTML = `
+                    <div class="reply-preview-bubble">
+                        <div class="reply-author">${data.replyTo.author}</div>
+                        <div>${data.replyTo.text}</div>
+                    </div>
+                `;
+            }
+
+            let textContent = data.text;
+            let casinoHTML = '';
+
+            // ПРОВЕРКА НА КАЗИНО 🎰
+            if (textContent.trim() === '🎰') {
+                const casinoId = 'casino-' + Math.random().toString(36).substring(2, 9);
+                casinoHTML = `
+                    <div class="casino-box">
+                        <div class="casino-reels" id="${casinoId}">🎰 🎰 🎰</div>
+                        <div class="casino-status" id="${casinoId}-status">Крутим...</div>
+                    </div>
+                `;
+                textContent = ''; // Скрываем обычный текст
+                setTimeout(() => runCasinoAnimation(casinoId, data.casinoResult), 300);
+            }
+
+            bubble.innerHTML = `
+                <div class="msg-author">${data.author}</div>
+                ${replyHTML}
+                <div>${textContent}</div>
+                ${casinoHTML}
+                <div class="msg-time">${data.time}</div>
+            `;
+
+            row.appendChild(avatarDiv);
+            row.appendChild(bubble);
+
+            // Навешиваем свайп влево для ответа
+            attachSwipeToReply(row, data);
+
+            chatMessages.appendChild(row);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // АНИМАЦИЯ СЛОТ-МАШИНЫ (КАЗИНО)
+        function runCasinoAnimation(id, targetResult) {
+            const reelsEl = document.getElementById(id);
+            const statusEl = document.getElementById(id + '-status');
+            if (!reelsEl) return;
+
+            const symbols = ['🍋', '🍒', '7️⃣', '🍇'];
+            let ticks = 0;
+            
+            const interval = setInterval(() => {
+                const r1 = symbols[Math.floor(Math.random() * symbols.length)];
+                const r2 = symbols[Math.floor(Math.random() * symbols.length)];
+                const r3 = symbols[Math.floor(Math.random() * symbols.length)];
+                reelsEl.innerText = `${r1} ${r2} ${r3}`;
+                ticks++;
+
+                if (ticks > 15) {
+                    clearInterval(interval);
+                    const finalReels = targetResult || [
+                        symbols[Math.floor(Math.random() * symbols.length)],
+                        symbols[Math.floor(Math.random() * symbols.length)],
+                        symbols[Math.floor(Math.random() * symbols.length)]
+                    ];
+                    
+                    reelsEl.innerText = `${finalReels[0]} ${finalReels[1]} ${finalReels[2]}`;
+
+                    if (finalReels[0] === '7️⃣' && finalReels[1] === '7️⃣' && finalReels[2] === '7️⃣') {
+                        statusEl.innerText = "💥 ДЖЕКПОТ! 777 💥";
+                    } else if (finalReels[0] === finalReels[1] && finalReels[1] === finalReels[2]) {
+                        statusEl.innerText = "🎉 ВЫИГРЫШ!";
+                    } else {
+                        statusEl.innerText = "❌ Повезет в следующий раз!";
+                    }
+                }
+            }, 80);
+        }
+
+        // СВАЙП ВЛЕВО ДЛЯ ОТВЕТА
+        function attachSwipeToReply(rowElement, msgData) {
+            let startX = 0;
+            let currentX = 0;
+            let isSwiping = false;
+
+            const startSwipe = (x) => {
+                startX = x;
+                isSwiping = true;
+            };
+
+            const moveSwipe = (x) => {
+                if (!isSwiping) return;
+                const diffX = x - startX;
+
+                // Разрешаем тянуть только влево
+                if (diffX < 0 && diffX > -100) {
+                    currentX = diffX;
+                    rowElement.style.transform = `translateX(${currentX}px)`;
+                }
+            };
+
+            const endSwipe = () => {
+                if (!isSwiping) return;
+                isSwiping = false;
+                rowElement.style.transform = `translateX(0px)`;
+
+                // Если потянули достаточно далеко влево (больше 50px)
+                if (currentX < -50) {
+                    setReplyMessage(msgData);
+                }
+                currentX = 0;
+            };
+
+            // Touch-события для мобилок
+            rowElement.addEventListener('touchstart', (e) => startSwipe(e.touches[0].clientX));
+            rowElement.addEventListener('touchmove', (e) => moveSwipe(e.touches[0].clientX));
+            rowElement.addEventListener('touchend', endSwipe);
+
+            // Mouse-события для ПК
+            rowElement.addEventListener('mousedown', (e) => startSwipe(e.clientX));
+            window.addEventListener('mousemove', (e) => moveSwipe(e.clientX));
+            window.addEventListener('mouseup', endSwipe);
+        }
+
+        function setReplyMessage(msgData) {
+            selectedReplyMsg = msgData;
+            document.getElementById('replyBarAuthor').innerText = msgData.author;
+            document.getElementById('replyBarText').innerText = msgData.text || '🎰 Слоты';
+            replyBar.classList.add('active');
+            document.getElementById('userInput').focus();
+        }
+
+        function cancelReply() {
+            selectedReplyMsg = null;
+            replyBar.classList.remove('active');
+        }
+
+        document.getElementById('cancelReplyBtn').addEventListener('click', cancelReply);
 
         // Отправка сообщений
         document.getElementById('chatForm').addEventListener('submit', (e) => {
@@ -681,18 +826,45 @@
                     chatDbPath = 'private_chats/' + pair;
                 }
 
-                push(ref(database, chatDbPath), {
+                const msgObject = {
                     author: currentUser,
                     avatar: currentAvatar,
                     text: text,
                     time: time
-                }).then(() => {
+                };
+
+                // Если это казино
+                if (text === '🎰') {
+                    const symbols = ['🍋', '🍒', '7️⃣', '🍇'];
+                    msgObject.casinoResult = [
+                        symbols[Math.floor(Math.random() * symbols.length)],
+                        symbols[Math.floor(Math.random() * symbols.length)],
+                        symbols[Math.floor(Math.random() * symbols.length)]
+                    ];
+                }
+
+                // Если ответ на сообщение
+                if (selectedReplyMsg) {
+                    msgObject.replyTo = {
+                        author: selectedReplyMsg.author,
+                        text: selectedReplyMsg.text || '🎰 Слоты'
+                    };
+                }
+
+                push(ref(database, chatDbPath), msgObject).then(() => {
                     input.value = '';
+                    cancelReply();
                 });
             }
         });
 
         // Навигация
+        document.getElementById('globalChatItem').addEventListener('click', () => {
+            document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('globalChatItem').classList.add('active');
+            openChat('global', 'Общий чат страны', '📢');
+        });
+
         document.getElementById('backBtn').addEventListener('click', () => {
             messenger.classList.remove('open-chat');
         });
