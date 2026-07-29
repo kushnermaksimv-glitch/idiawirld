@@ -107,11 +107,6 @@
             font-weight: bold;
         }
 
-        .auth-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
         .auth-error {
             color: #b30000;
             font-size: 0.85rem;
@@ -196,15 +191,15 @@
 <body>
 
     <div class="chat-container">
-        <!-- Экран авторизации -->
+        <!-- Экран входа -->
         <div class="auth-screen" id="authScreen">
             <h2>🐾 Мир Идиаканта</h2>
-            <input type="text" id="authUsername" class="auth-input" placeholder="Логин (Имя)" autocomplete="off">
+            <input type="text" id="authUsername" class="auth-input" placeholder="Ваш Никнейм" autocomplete="off">
             <input type="password" id="authPassword" class="auth-input" placeholder="Пароль">
             <div class="auth-error" id="authError"></div>
             <div class="auth-btn-group">
                 <button class="auth-btn" id="loginBtn">Войти</button>
-                <button class="auth-btn" id="regBtn" style="background-color: #8b5a2b;">Регистрация</button>
+                <button class="auth-btn" id="regBtn" style="background-color: #8b5a2b;">Создать аккаунт</button>
             </div>
         </div>
 
@@ -214,21 +209,22 @@
             <button class="logout-btn" id="logoutBtn">Выйти</button>
         </div>
 
-        <!-- Сообщения -->
+        <!-- Окно с сообщениями -->
         <div class="chat-messages" id="chatMessages"></div>
 
-        <!-- Поле ввода -->
+        <!-- Поле отправки -->
         <form class="chat-input-area" id="chatForm">
             <input type="text" id="userInput" placeholder="Напишите сообщение..." autocomplete="off" required>
             <button type="submit">Отправить</button>
         </form>
     </div>
 
-    <!-- Модули Firebase -->
+    <!-- Модули Firebase (Стабильная версия) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, get, push, child, onChildAdded } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, set, push, onChildAdded, get, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
+        // Конфигурация вашего проекта
         const firebaseConfig = {
             apiKey: "AIzaSyByKktnwPbg1zBU4wYR8hceDc57BR0Y4Zo",
             authDomain: "worldidiakant.firebaseapp.com",
@@ -242,7 +238,7 @@
 
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
-        const messagesRef = ref(database, 'messages');
+        const messagesRef = ref(database, 'global_chat');
         const usersRef = ref(database, 'users');
 
         const authScreen = document.getElementById('authScreen');
@@ -259,105 +255,85 @@
 
         let currentUser = localStorage.getItem('idiakant_user');
 
+        // Очистка ника от недопустимых символов
+        function cleanName(str) {
+            return str.replace(/[.$\[\]#\/]/g, "_").trim();
+        }
+
+        // Если пользователь уже входил ранее
         if (currentUser) {
             authScreen.style.display = 'none';
             headerTitle.innerText = `🐾 Чат: ${currentUser}`;
-            listenMessages();
-        }
-
-        // Очистка имени от запрещённых Firebase символов
-        function sanitizeUsername(name) {
-            return name.replace(/[.$\[\]#\/]/g, "_");
+            startListening();
         }
 
         // Регистрация
         regBtn.addEventListener('click', async () => {
-            let rawName = authUsername.value.trim();
-            const password = authPassword.value.trim();
+            const nick = cleanName(authUsername.value);
+            const pass = authPassword.value.trim();
 
-            if (!rawName || !password) {
-                authError.innerText = 'Заполните логин и пароль!';
+            if (!nick || !pass) {
+                authError.innerText = "Заполните логин и пароль!";
                 return;
             }
 
-            const username = sanitizeUsername(rawName);
-
             try {
-                regBtn.disabled = true;
-                regBtn.innerText = "Ждите...";
-                authError.innerText = '';
-
-                const userSnap = await get(child(usersRef, username));
-                
-                if (userSnap.exists()) {
-                    authError.innerText = 'Пользователь с таким логином уже существует!';
+                const snapshot = await get(child(usersRef, nick));
+                if (snapshot.exists()) {
+                    authError.innerText = "Этот ник уже занят!";
                 } else {
-                    // Сохраняем пароль
-                    await set(ref(database, 'users/' + username), { password: password });
-                    loginSuccess(username);
+                    await set(ref(database, 'users/' + nick), { pass: pass });
+                    completeLogin(nick);
                 }
             } catch (err) {
+                authError.innerText = "Ошибка! Проверьте правила (Rules) в Firebase.";
                 console.error(err);
-                authError.innerText = 'Ошибка базы данных! Проверьте правила (Rules) в консоли Firebase.';
-            } finally {
-                regBtn.disabled = false;
-                regBtn.innerText = "Регистрация";
             }
         });
 
         // Вход
         loginBtn.addEventListener('click', async () => {
-            let rawName = authUsername.value.trim();
-            const password = authPassword.value.trim();
+            const nick = cleanName(authUsername.value);
+            const pass = authPassword.value.trim();
 
-            if (!rawName || !password) {
-                authError.innerText = 'Заполните логин и пароль!';
+            if (!nick || !pass) {
+                authError.innerText = "Заполните логин и пароль!";
                 return;
             }
 
-            const username = sanitizeUsername(rawName);
-
             try {
-                loginBtn.disabled = true;
-                loginBtn.innerText = "Ждите...";
-                authError.innerText = '';
-
-                const userSnap = await get(child(usersRef, username));
-                
-                if (userSnap.exists()) {
-                    const userData = userSnap.val();
-                    if (userData.password === password) {
-                        loginSuccess(username);
+                const snapshot = await get(child(usersRef, nick));
+                if (snapshot.exists()) {
+                    if (snapshot.val().pass === pass) {
+                        completeLogin(nick);
                     } else {
-                        authError.innerText = 'Неверный пароль!';
+                        authError.innerText = "Неверный пароль!";
                     }
                 } else {
-                    authError.innerText = 'Пользователь не найден! Нажмите Регистрация.';
+                    authError.innerText = "Пользователь не найден!";
                 }
             } catch (err) {
+                authError.innerText = "Ошибка подключения к базе!";
                 console.error(err);
-                authError.innerText = 'Ошибка подключения к базе!';
-            } finally {
-                loginBtn.disabled = false;
-                loginBtn.innerText = "Войти";
             }
         });
 
-        function loginSuccess(username) {
-            currentUser = username;
-            localStorage.setItem('idiakant_user', username);
+        function completeLogin(nick) {
+            currentUser = nick;
+            localStorage.setItem('idiakant_user', nick);
             authScreen.style.display = 'none';
-            headerTitle.innerText = `🐾 Чат: ${username}`;
+            headerTitle.innerText = `🐾 Чат: ${nick}`;
             authError.innerText = '';
-            listenMessages();
+            startListening();
         }
 
+        // Выход
         logoutBtn.addEventListener('click', () => {
             localStorage.removeItem('idiakant_user');
             location.reload();
         });
 
-        // Отправка сообщений
+        // Отправка сообщений всем
         chatForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const text = userInput.value.trim();
@@ -373,35 +349,35 @@
                         time: timeStr
                     });
                     userInput.value = '';
-                } catch (err) {
-                    alert("Ошибка при отправке сообщения. Проверьте соединение.");
+                } catch (e) {
+                    alert("Ошибка отправки! Опубликованы ли правила (Rules) в Firebase?");
                 }
             }
         });
 
-        // Получение сообщений
+        // Приём сообщений в реальном времени
         let isListening = false;
-        function listenMessages() {
+        function startListening() {
             if (isListening) return;
             isListening = true;
 
             onChildAdded(messagesRef, (snapshot) => {
                 const data = snapshot.val();
                 
-                const messageDiv = document.createElement('div');
-                messageDiv.classList.add('message');
+                const msgDiv = document.createElement('div');
+                msgDiv.classList.add('message');
 
                 if (data.author === currentUser) {
-                    messageDiv.classList.add('my-message');
+                    msgDiv.classList.add('my-message');
                 }
 
-                messageDiv.innerHTML = `
+                msgDiv.innerHTML = `
                     <div class="message-author">${data.author}</div>
                     <div>${data.text}</div>
                     <div class="message-time">${data.time}</div>
                 `;
 
-                chatMessages.appendChild(messageDiv);
+                chatMessages.appendChild(msgDiv);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             });
         }
