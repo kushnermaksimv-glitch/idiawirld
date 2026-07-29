@@ -383,4 +383,425 @@
         }
     </script>
 </body>
+</<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Чат страны Мир Идиаканта</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #d1a374;
+            background-image: radial-gradient(#e5c29f 1px, transparent 1px);
+            background-size: 20px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 600px;
+            height: 85vh;
+            background-color: #fff8f0;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(60, 40, 20, 0.25);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 2px solid #b8860b;
+            position: relative;
+        }
+
+        /* Шапка */
+        .chat-header {
+            background: linear-gradient(135deg, #2c1d11, #573a23);
+            color: #f3e5ab;
+            padding: 12px 15px;
+            border-bottom: 2px solid #b8860b;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #f3e5ab;
+            object-fit: cover;
+            background: #8b5a2b;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+        }
+
+        .header-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            background: #8b5a2b;
+            color: #fff;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        /* Экраны Авторизации и Настроек */
+        .overlay-screen {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #fff8f0;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 25px;
+            gap: 12px;
+        }
+
+        .overlay-screen h2 { color: #573a23; }
+
+        .auth-input {
+            width: 100%;
+            max-width: 300px;
+            padding: 10px;
+            border: 1px solid #c8a27c;
+            border-radius: 8px;
+            outline: none;
+        }
+
+        .auth-btn {
+            width: 100%;
+            max-width: 300px;
+            padding: 10px;
+            background-color: #573a23;
+            color: #f3e5ab;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Сообщения */
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background-color: #fdfaf6;
+        }
+
+        .message-row {
+            display: flex;
+            gap: 10px;
+            max-width: 85%;
+        }
+
+        .message-row.my-msg-row {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .msg-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #b8860b;
+            background: #d1a374;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .message-bubble {
+            background-color: #eae0d5;
+            color: #332211;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            word-break: break-word;
+        }
+
+        .my-msg-row .message-bubble {
+            background-color: #573a23;
+            color: #ffffff;
+        }
+
+        .msg-author {
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #8b5a2b;
+            margin-bottom: 2px;
+        }
+
+        .my-msg-row .msg-author {
+            color: #f3e5ab;
+        }
+
+        .msg-time {
+            font-size: 0.65rem;
+            opacity: 0.7;
+            text-align: right;
+            margin-top: 3px;
+        }
+
+        /* Поле ввода */
+        .chat-input-area {
+            display: flex;
+            padding: 12px;
+            background-color: #fff8f0;
+            border-top: 1px solid #e5c29f;
+            gap: 8px;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #c8a27c;
+            border-radius: 8px;
+            outline: none;
+        }
+
+        .chat-input-area button {
+            background-color: #573a23;
+            color: #f3e5ab;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .status-bar {
+            background: #2c1d11;
+            color: #00ff66;
+            font-size: 0.7rem;
+            text-align: center;
+            padding: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chat-container">
+        <div class="status-bar" id="statusBar">● Подключение к серверу...</div>
+
+        <!-- Окно Входа/Регистрации -->
+        <div class="overlay-screen" id="authScreen">
+            <h2>🐾 Мир Идиаканта</h2>
+            <input type="text" id="authUsername" class="auth-input" placeholder="Логин / Никнейм">
+            <input type="password" id="authPassword" class="auth-input" placeholder="Пароль">
+            <input type="text" id="authAvatar" class="auth-input" placeholder="Ссылка на фото или Эмодзи (например 😎)">
+            <button class="auth-btn" id="startBtn">Войти в Чат</button>
+        </div>
+
+        <!-- Окно Настроек -->
+        <div class="overlay-screen" id="settingsScreen" style="display: none;">
+            <h2>⚙️ Настройки Профиля</h2>
+            <input type="text" id="setAvatar" class="auth-input" placeholder="URL фото или Эмодзи">
+            <button class="auth-btn" id="saveSettingsBtn">Сохранить</button>
+            <button class="auth-btn" id="closeSettingsBtn" style="background:#8b5a2b;">Отмена</button>
+        </div>
+
+        <!-- Шапка -->
+        <div class="chat-header">
+            <div class="chat-header-info">
+                <div class="header-avatar" id="headerAvatar">🐱</div>
+                <div>
+                    <h2 id="headerTitle" style="font-size: 1rem;">Идиакант</h2>
+                </div>
+            </div>
+            <div class="header-btns">
+                <button class="icon-btn" id="openSettingsBtn">⚙️</button>
+                <button class="icon-btn" id="logoutBtn">🚪</button>
+            </div>
+        </div>
+
+        <!-- Сообщения -->
+        <div class="chat-messages" id="chatMessages"></div>
+
+        <!-- Форма -->
+        <form class="chat-input-area" id="chatForm">
+            <input type="text" id="userInput" placeholder="Напишите сообщение..." autocomplete="off" required>
+            <button type="submit">➤</button>
+        </form>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, push, onChildAdded, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyByKktnwPbg1zBU4wYR8hceDc57BR0Y4Zo",
+            authDomain: "worldidiakant.firebaseapp.com",
+            databaseURL: "https://worldidiakant-default-rtdb.firebaseio.com",
+            projectId: "worldidiakant",
+            storageBucket: "worldidiakant.firebasestorage.app",
+            messagingSenderId: "118297973184",
+            appId: "1:118297973184:web:3bbf230075f71f6b66b825",
+            measurementId: "G-FPZMTSWPDQ"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const messagesRef = ref(database, 'chat_v2');
+
+        // Отслеживание статуса соединения
+        const connectedRef = ref(database, ".info/connected");
+        onValue(connectedRef, (snap) => {
+            if (snap.val() === true) {
+                document.getElementById('statusBar').innerText = "● В сети (Мир Идиаканта)";
+                document.getElementById('statusBar').style.color = "#00ff66";
+            } else {
+                document.getElementById('statusBar').innerText = "○ Нет подключения к Firebase";
+                document.getElementById('statusBar').style.color = "#ff4444";
+            }
+        });
+
+        // Переменные пользователя
+        let currentUser = localStorage.getItem('idi_user') || '';
+        let currentAvatar = localStorage.getItem('idi_avatar') || '🐱';
+
+        function updateUI() {
+            if (currentUser) {
+                document.getElementById('authScreen').style.display = 'none';
+                document.getElementById('headerTitle').innerText = currentUser;
+                renderAvatar(document.getElementById('headerAvatar'), currentAvatar);
+            }
+        }
+
+        function renderAvatar(element, avatarData) {
+            if (avatarData.startsWith('http://') || avatarData.startsWith('https://')) {
+                element.innerHTML = `<img src="${avatarData}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+            } else {
+                element.innerText = avatarData || '🐱';
+            }
+        }
+
+        // Авторизация
+        document.getElementById('startBtn').addEventListener('click', () => {
+            const user = document.getElementById('authUsername').value.trim();
+            const avatar = document.getElementById('authAvatar').value.trim() || '🐱';
+
+            if (user) {
+                currentUser = user;
+                currentAvatar = avatar;
+                localStorage.setItem('idi_user', user);
+                localStorage.setItem('idi_avatar', avatar);
+                updateUI();
+                listenMessages();
+            } else {
+                alert("Введите имя!");
+            }
+        });
+
+        // Настройки
+        document.getElementById('openSettingsBtn').addEventListener('click', () => {
+            document.getElementById('settingsScreen').style.display = 'flex';
+            document.getElementById('setAvatar').value = currentAvatar;
+        });
+
+        document.getElementById('closeSettingsBtn').addEventListener('click', () => {
+            document.getElementById('settingsScreen').style.display = 'none';
+        });
+
+        document.getElementById('saveSettingsBtn').addEventListener('click', () => {
+            currentAvatar = document.getElementById('setAvatar').value.trim() || '🐱';
+            localStorage.setItem('idi_avatar', currentAvatar);
+            document.getElementById('settingsScreen').style.display = 'none';
+            updateUI();
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.clear();
+            location.reload();
+        });
+
+        // Отправка сообщений
+        document.getElementById('chatForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const input = document.getElementById('userInput');
+            const text = input.value.trim();
+
+            if (text && currentUser) {
+                const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                push(messagesRef, {
+                    author: currentUser,
+                    avatar: currentAvatar,
+                    text: text,
+                    time: time
+                }).then(() => {
+                    input.value = '';
+                }).catch((err) => {
+                    alert("Ошибка отправки! Проверьте правила базы в консоли.");
+                });
+            }
+        });
+
+        // Слушатель чата
+        let isListening = false;
+        function listenMessages() {
+            if (isListening) return;
+            isListening = true;
+
+            onChildAdded(messagesRef, (snapshot) => {
+                const data = snapshot.val();
+                
+                const row = document.createElement('div');
+                row.className = `message-row ${data.author === currentUser ? 'my-msg-row' : ''}`;
+
+                const avatarDiv = document.createElement('div');
+                avatarDiv.className = 'msg-avatar';
+                renderAvatar(avatarDiv, data.avatar);
+
+                const bubble = document.createElement('div');
+                bubble.className = 'message-bubble';
+                bubble.innerHTML = `
+                    <div class="msg-author">${data.author}</div>
+                    <div>${data.text}</div>
+                    <div class="msg-time">${data.time}</div>
+                `;
+
+                row.appendChild(avatarDiv);
+                row.appendChild(bubble);
+
+                const container = document.getElementById('chatMessages');
+                container.appendChild(row);
+                container.scrollTop = container.scrollHeight;
+            });
+        }
+
+        updateUI();
+        if (currentUser) listenMessages();
+    </script>
+</body>
 </html>
+
