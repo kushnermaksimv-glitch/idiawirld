@@ -995,6 +995,7 @@
             }
 
             currentUserId = userData.id;
+            // Имя тега по умолчанию: user_[id]
             currentUsernameTag = userData.usernameTag || `user_${currentUserId}`;
             currentAvatar = inputAvatar || userData.avatar || '🐱';
             currentBio = userData.bio || '';
@@ -1089,7 +1090,7 @@
                         </div>
                         <div class="chat-item-info">
                             <div class="chat-item-title">${username}</div>
-                            <div class="chat-item-sub" id="sub-${username}">@${data.usernameTag || 'user'}</div>
+                            <div class="chat-item-sub" id="sub-${username}">@${data.usernameTag || ('user_' + (data.id || ''))}</div>
                         </div>
                     `;
 
@@ -1110,7 +1111,7 @@
                             if (col) renderAvatar(col, newUserData.avatar);
                             const sub = document.getElementById('sub-' + username);
                             if (sub && !sub.innerText.includes('печатает')) {
-                                sub.innerText = `@${newUserData.usernameTag || 'user'}`;
+                                sub.innerText = `@${newUserData.usernameTag || ('user_' + (newUserData.id || ''))}`;
                             }
                         }
                     });
@@ -1130,7 +1131,7 @@
                         const isTyping = snap.val();
                         const sub = document.getElementById('sub-' + username);
                         if (sub) {
-                            sub.innerText = isTyping ? '✍️ печатает...' : `@${allUsersData[username]?.usernameTag || 'user'}`;
+                            sub.innerText = isTyping ? '✍️ печатает...' : `@${allUsersData[username]?.usernameTag || ('user_' + (allUsersData[username]?.id || ''))}`;
                             sub.style.color = isTyping ? '#ffd700' : 'inherit';
                         }
                         if (activeChatId === username) {
@@ -1344,7 +1345,7 @@
 
             renderAvatar(document.getElementById('viewProfileAvatar'), userData.avatar);
             document.getElementById('viewProfileName').innerText = username;
-            document.getElementById('viewProfileUsername').innerText = `@${userData.usernameTag || 'user'}`;
+            document.getElementById('viewProfileUsername').innerText = `@${userData.usernameTag || ('user_' + (userData.id || ''))}`;
             document.getElementById('viewProfileId').innerText = `ID: ${userData.id || '?'}`;
             document.getElementById('viewProfileBio').innerText = userData.bio || 'Описание пока не добавлено...';
 
@@ -1385,8 +1386,7 @@
             const newAvatar = document.getElementById('setAvatarInput').value.trim() || '🐱';
 
             if (!newUsernameTag) {
-                alert("Юзернейм не может быть пустым!");
-                return;
+                newUsernameTag = `user_${currentUserId}`;
             }
 
             // Проверка уникальности юзернейма в базе
