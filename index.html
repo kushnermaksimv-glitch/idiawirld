@@ -102,8 +102,8 @@
 
         .sidebar-drawer {
             position: absolute;
-            top: 0; left: -300px;
-            width: 300px;
+            top: 0; left: -320px;
+            width: 320px;
             height: 100%;
             background-color: var(--bg-container);
             color: var(--text-main);
@@ -307,6 +307,7 @@
             flex-shrink: 0;
             overflow: hidden;
             border: 1px solid var(--border-color);
+            cursor: pointer;
         }
 
         .msg-bubble {
@@ -324,7 +325,16 @@
             color: var(--text-my);
         }
 
-        .msg-author { font-size: 0.75rem; font-weight: bold; opacity: 0.8; margin-bottom: 2px; }
+        .msg-author { 
+            font-size: 0.75rem; 
+            font-weight: bold; 
+            opacity: 0.9; 
+            margin-bottom: 2px;
+            cursor: pointer;
+            display: inline-block;
+        }
+        .msg-author:hover { text-decoration: underline; }
+
         .msg-time { font-size: 0.65rem; opacity: 0.7; text-align: right; margin-top: 3px; }
 
         .edited-tag {
@@ -566,36 +576,71 @@
             border: 1px solid var(--border-color);
         }
 
-        .online-modal-overlay {
+        /* МОДАЛЬНЫЕ ОКНА */
+        .modal-overlay {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.6);
+            background: rgba(0,0,0,0.65);
             z-index: 50;
             display: none;
             justify-content: center;
             align-items: center;
         }
-        .online-modal-overlay.active { display: flex; }
-        .online-modal-card {
+        .modal-overlay.active { display: flex; }
+        .modal-card {
             background: var(--bg-container);
             color: var(--text-main);
             border: 2px solid var(--border-color);
-            border-radius: 12px;
+            border-radius: 16px;
             width: 90%;
-            max-width: 320px;
-            padding: 15px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            max-width: 340px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            max-height: 70vh;
+            gap: 12px;
+            position: relative;
         }
-        .online-modal-list {
-            overflow-y: auto;
+
+        /* КАРТОЧКА ПРОФИЛЯ */
+        .profile-card-header {
             display: flex;
             flex-direction: column;
+            align-items: center;
             gap: 8px;
-            max-height: 50vh;
+            text-align: center;
+        }
+        .profile-card-avatar {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            border: 3px solid var(--border-color);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem;
+            background: var(--bg-msg-my);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .profile-badge {
+            background: var(--bg-header);
+            color: var(--text-header);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .profile-bio-box {
+            background: var(--bg-window);
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            max-height: 100px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
         }
 
         @media (max-width: 650px) {
@@ -612,36 +657,70 @@
     <div class="messenger-container" id="messenger">
         <div class="drawer-overlay" id="drawerOverlay"></div>
 
+        <!-- МОДАЛКА ПРОСМОТРА ПРОФИЛЯ ПОЛЬЗОВАТЕЛЯ -->
+        <div class="modal-overlay" id="profileModalOverlay">
+            <div class="modal-card">
+                <button class="close-reply-btn" id="closeProfileModalBtn" style="position:absolute; top:12px; right:12px;">✕</button>
+                <div class="profile-card-header">
+                    <div class="profile-card-avatar" id="viewProfileAvatar">🐱</div>
+                    <h2 id="viewProfileName" style="font-size:1.3rem;">Имя</h2>
+                    <div style="display:flex; gap:6px; align-items:center;">
+                        <span id="viewProfileUsername" style="color:#ffd700; font-weight:bold; font-size:0.9rem;">@username</span>
+                        <span class="profile-badge" id="viewProfileId">ID: 0</span>
+                    </div>
+                    <div id="viewProfileStatus" style="font-size:0.75rem; opacity:0.8;">⚪ офлайн</div>
+                </div>
+                <div>
+                    <label style="font-size:0.75rem; font-weight:bold; opacity:0.8;">О себе:</label>
+                    <div class="profile-bio-box" id="viewProfileBio">Описание отсутсвует</div>
+                </div>
+                <button class="auth-btn" id="startDmFromProfileBtn" style="width:100%; margin-top:5px;">💬 Написать сообщение</button>
+            </div>
+        </div>
+
         <!-- МОДАЛКА ОНЛАЙН ИГРОКОВ -->
-        <div class="online-modal-overlay" id="onlineModalOverlay">
-            <div class="online-modal-card">
+        <div class="modal-overlay" id="onlineModalOverlay">
+            <div class="modal-card">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <h3 style="font-size:1.1rem;">🟢 Сейчас онлайн</h3>
                     <button class="close-reply-btn" id="closeOnlineModalBtn">✕</button>
                 </div>
-                <div class="online-modal-list" id="onlineModalList"></div>
+                <div style="overflow-y:auto; display:flex; flex-direction:column; gap:8px; max-height:50vh;" id="onlineModalList"></div>
             </div>
         </div>
 
         <!-- ШТОРКА НАСТРОЕК -->
         <div class="sidebar-drawer" id="sidebarDrawer">
-            <h3>⚙️ Настройки аккаунта</h3>
+            <h3>⚙️ Настройки профиля</h3>
             
             <div style="text-align: center; margin: 5px 0;">
-                <div id="drawerAvatar" class="chat-item-avatar" style="width:65px; height:65px; margin:0 auto; font-size:1.8rem;">🐱</div>
+                <div id="drawerAvatar" class="chat-item-avatar" style="width:75px; height:75px; margin:0 auto; font-size:2rem;">🐱</div>
                 <h4 id="drawerUsername" style="margin-top:5px;">Имя</h4>
+                <div id="drawerUserTag" style="font-size:0.85rem; color:#ffd700; font-weight:bold;">@username</div>
+                <div id="drawerUserId" style="font-size:0.75rem; opacity:0.7;">ID: --</div>
             </div>
 
             <div class="setting-group">
-                <label>Аватар (Эмодзи или Загрузить фото):</label>
+                <label style="font-size:0.8rem; font-weight:bold;">Юзернейм (@имя):</label>
+                <input type="text" id="setUsernameInput" class="auth-input" placeholder="user_1">
+            </div>
+
+            <div class="setting-group">
+                <label style="font-size:0.8rem; font-weight:bold;">Описание профиля (О себе):</label>
+                <textarea id="setBioInput" class="auth-input" style="height:60px; resize:none;" placeholder="Расскажите о себе..."></textarea>
+            </div>
+
+            <div class="setting-group">
+                <label style="font-size:0.8rem; font-weight:bold;">Аватар (Эмодзи или Фото):</label>
                 <input type="text" id="setAvatarInput" class="auth-input" placeholder="Введите эмодзи 😎">
-                <div style="text-align:center; font-size:0.8rem; opacity:0.7;">или</div>
+                <div style="text-align:center; font-size:0.75rem; opacity:0.7; margin:2px 0;">или</div>
                 <label class="file-upload-btn">
-                    📷 Выбрать фото с устройства
+                    📷 Загрузить фото профиля
                     <input type="file" id="avatarFileInput" accept="image/*" style="display:none;">
                 </label>
-                <button class="auth-btn" id="saveAvatarBtn" style="margin-top:5px;">Сохранить аватар</button>
             </div>
+
+            <button class="auth-btn" id="saveProfileBtn" style="background:#2ec4b6; color:#fff;">💾 Сохранить профиль</button>
 
             <div class="setting-group">
                 <label>Тема оформления:</label>
@@ -662,8 +741,7 @@
                 </select>
             </div>
 
-            <div style="flex:1;"></div>
-            <button class="auth-btn" id="logoutBtn" style="opacity: 0.8;">Выйти с аккаунта</button>
+            <button class="auth-btn btn-danger" id="logoutBtn" style="margin-top: auto;">Выйти с аккаунта</button>
         </div>
 
         <!-- ЭКРАН ВХОДА -->
@@ -726,7 +804,7 @@
                 <div id="packCreateArea" style="display:none; flex-direction:column; gap:5px; margin-bottom:5px;">
                     <input type="text" id="packNameInput" class="auth-input" style="padding:4px; font-size:0.8rem;" placeholder="Название пака">
                     <label class="file-upload-btn" style="padding:4px; font-size:0.8rem;">
-                        🖼️ Добавить стикер (картинка -> текст)
+                        🖼️ Добавить стикер (картинка)
                         <input type="file" id="stickerFileInput" accept="image/*" style="display:none;">
                     </label>
                 </div>
@@ -758,7 +836,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, push, onChildAdded, onChildChanged, onChildRemoved, onValue, set, remove, update, onDisconnect, off, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, push, onChildAdded, onChildChanged, onChildRemoved, onValue, set, remove, update, onDisconnect, off, get, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyByKktnwPbg1zBU4wYR8hceDc57BR0Y4Zo",
@@ -776,6 +854,9 @@
 
         let currentUser = localStorage.getItem('idi_user') || '';
         let currentAvatar = '🐱';
+        let currentUserId = null;
+        let currentUsernameTag = '';
+        let currentBio = '';
         let currentTheme = 'theme-classic';
         let currentFont = 'font-medium';
         let playedGames = [];
@@ -783,6 +864,7 @@
         let activeChatId = 'global';
         let currentChatRef = null;
         let allUsersData = {};
+        let viewTargetUser = null;
 
         let selectedMsgData = null;
         let editingMsgId = null;
@@ -802,7 +884,6 @@
         const themeSelect = document.getElementById('themeSelect');
         const fontSelect = document.getElementById('fontSelect');
 
-        // Функция применения темы и шрифта на клиенте
         function applyVisualSettings(theme, font) {
             currentTheme = theme || 'theme-classic';
             currentFont = font || 'font-medium';
@@ -811,7 +892,6 @@
             fontSelect.value = currentFont;
         }
 
-        // Авто-сохранение выбранной темы в Firebase (доступно со всех устройств)
         themeSelect.addEventListener('change', async (e) => {
             applyVisualSettings(e.target.value, currentFont);
             if (currentUser) {
@@ -819,7 +899,6 @@
             }
         });
 
-        // Авто-сохранение выбранного шрифта в Firebase
         fontSelect.addEventListener('change', async (e) => {
             applyVisualSettings(currentTheme, e.target.value);
             if (currentUser) {
@@ -827,7 +906,6 @@
             }
         });
 
-        // Конвертер изображений в сжатый Текст (Base64)
         function convertFileToBase64(file, maxWidth = 200, maxHeight = 200) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -871,7 +949,6 @@
             }
         }
 
-        // Загрузка фото в текст при входе
         document.getElementById('authAvatarFile').addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (file) {
@@ -880,7 +957,6 @@
             }
         });
 
-        // Загрузка фото в текст из настроек
         document.getElementById('avatarFileInput').addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (file) {
@@ -889,7 +965,15 @@
             }
         });
 
-        // Вход в аккаунт и загрузка его конфигурации из облака
+        // Генерация ультимативного порядкового ID (начиная с 1)
+        async function getNextUserId() {
+            const countRef = ref(database, 'users_count');
+            const result = await runTransaction(countRef, (currentCount) => {
+                return (currentCount || 0) + 1;
+            });
+            return result.snapshot.val();
+        }
+
         document.getElementById('startBtn').addEventListener('click', async () => {
             const user = document.getElementById('authUsername').value.trim();
             const inputAvatar = document.getElementById('authAvatar').value.trim();
@@ -902,16 +986,25 @@
             currentUser = user;
             localStorage.setItem('idi_user', user);
 
-            // Читаем аккаунт пользователя из Firebase Database
-            const userSnap = await get(ref(database, `users/${user}`));
+            const userRef = ref(database, `users/${user}`);
+            const userSnap = await get(userRef);
             let userData = userSnap.val() || {};
 
+            if (!userData.id) {
+                userData.id = await getNextUserId();
+            }
+
+            currentUserId = userData.id;
+            currentUsernameTag = userData.usernameTag || `user_${currentUserId}`;
             currentAvatar = inputAvatar || userData.avatar || '🐱';
+            currentBio = userData.bio || '';
             const settings = userData.settings || {};
 
-            // Записываем обновленные данные аватара и настроек по умолчанию в облако
-            await update(ref(database, `users/${user}`), {
+            await update(userRef, {
+                id: currentUserId,
+                usernameTag: currentUsernameTag,
                 avatar: currentAvatar,
+                bio: currentBio,
                 settings: {
                     theme: settings.theme || 'theme-classic',
                     font: settings.font || 'font-medium'
@@ -926,18 +1019,22 @@
             authScreen.style.display = 'none';
             document.getElementById('drawerUsername').innerText = currentUser;
             
-            // Настройка подписки на изменения своего аккаунта в реальном времени
             onValue(ref(database, `users/${currentUser}`), (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
+                    currentUserId = data.id;
+                    currentUsernameTag = data.usernameTag || `user_${data.id}`;
                     currentAvatar = data.avatar || '🐱';
+                    currentBio = data.bio || '';
+
                     renderAvatar(document.getElementById('drawerAvatar'), currentAvatar);
-                    if (data.settings) {
-                        applyVisualSettings(data.settings.theme, data.settings.font);
-                    }
-                    if (data.playedGames) {
-                        playedGames = data.playedGames;
-                    }
+                    document.getElementById('drawerUserId').innerText = `ID: ${currentUserId}`;
+                    document.getElementById('drawerUserTag').innerText = `@${currentUsernameTag}`;
+                    document.getElementById('setUsernameInput').value = currentUsernameTag;
+                    document.getElementById('setBioInput').value = currentBio;
+
+                    if (data.settings) applyVisualSettings(data.settings.theme, data.settings.font);
+                    if (data.playedGames) playedGames = data.playedGames;
                 }
             });
 
@@ -992,7 +1089,7 @@
                         </div>
                         <div class="chat-item-info">
                             <div class="chat-item-title">${username}</div>
-                            <div class="chat-item-sub" id="sub-${username}">Личные сообщения</div>
+                            <div class="chat-item-sub" id="sub-${username}">@${data.usernameTag || 'user'}</div>
                         </div>
                     `;
 
@@ -1005,12 +1102,17 @@
                     chatsList.appendChild(chatItem);
                     renderAvatar(document.getElementById('avatar-col-' + username), data.avatar);
 
-                    // Синхронизация аватарок других собеседников при их обновлении
-                    onValue(ref(database, `users/${username}/avatar`), (avatarSnap) => {
-                        const newAvatar = avatarSnap.val();
-                        allUsersData[username].avatar = newAvatar;
-                        const col = document.getElementById('avatar-col-' + username);
-                        if (col) renderAvatar(col, newAvatar);
+                    onValue(ref(database, `users/${username}`), (userSnap) => {
+                        const newUserData = userSnap.val();
+                        if (newUserData) {
+                            allUsersData[username] = newUserData;
+                            const col = document.getElementById('avatar-col-' + username);
+                            if (col) renderAvatar(col, newUserData.avatar);
+                            const sub = document.getElementById('sub-' + username);
+                            if (sub && !sub.innerText.includes('печатает')) {
+                                sub.innerText = `@${newUserData.usernameTag || 'user'}`;
+                            }
+                        }
                     });
 
                     onValue(ref(database, 'status/' + username), (snap) => {
@@ -1028,7 +1130,7 @@
                         const isTyping = snap.val();
                         const sub = document.getElementById('sub-' + username);
                         if (sub) {
-                            sub.innerText = isTyping ? '✍️ печатает...' : 'Личные сообщения';
+                            sub.innerText = isTyping ? '✍️ печатает...' : `@${allUsersData[username]?.usernameTag || 'user'}`;
                             sub.style.color = isTyping ? '#ffd700' : 'inherit';
                         }
                         if (activeChatId === username) {
@@ -1150,6 +1252,12 @@
             const avatarDiv = document.createElement('div');
             avatarDiv.className = 'msg-avatar';
             renderAvatar(avatarDiv, data.avatar);
+            
+            // Нажатие на аватар -> Открыть профиль
+            avatarDiv.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openUserProfileModal(data.author);
+            });
 
             const bubble = document.createElement('div');
             bubble.className = 'msg-bubble';
@@ -1189,7 +1297,7 @@
             }
 
             bubble.innerHTML = `
-                <div class="msg-author">${data.author}</div>
+                <div class="msg-author" id="author-${msgId}">${data.author}</div>
                 ${replyHTML}
                 ${mainContent}
                 ${gameHTML}
@@ -1198,6 +1306,15 @@
 
             row.appendChild(avatarDiv);
             row.appendChild(bubble);
+
+            // Нажатие на Имя автора -> Открыть профиль
+            const authorEl = bubble.querySelector(`#author-${msgId}`);
+            if (authorEl) {
+                authorEl.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openUserProfileModal(data.author);
+                });
+            }
 
             const replyPreview = bubble.querySelector('.reply-preview-clickable');
             if (replyPreview && data.replyTo && data.replyTo.msgId) {
@@ -1213,6 +1330,90 @@
             chatMessages.appendChild(row);
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
+
+        // --- МОДАЛЬНОЕ ОКНО ПРОФИЛЯ ПОЛЬЗОВАТЕЛЯ ---
+        const profileModalOverlay = document.getElementById('profileModalOverlay');
+
+        async function openUserProfileModal(username) {
+            viewTargetUser = username;
+            
+            const userSnap = await get(ref(database, `users/${username}`));
+            const userData = userSnap.val() || {};
+            const statusSnap = await get(ref(database, `status/${username}`));
+            const statusData = statusSnap.val();
+
+            renderAvatar(document.getElementById('viewProfileAvatar'), userData.avatar);
+            document.getElementById('viewProfileName').innerText = username;
+            document.getElementById('viewProfileUsername').innerText = `@${userData.usernameTag || 'user'}`;
+            document.getElementById('viewProfileId').innerText = `ID: ${userData.id || '?'}`;
+            document.getElementById('viewProfileBio').innerText = userData.bio || 'Описание пока не добавлено...';
+
+            const statusEl = document.getElementById('viewProfileStatus');
+            if (statusData && statusData.state === 'online') {
+                statusEl.innerText = '🟢 онлайн';
+                statusEl.style.color = '#2ec4b6';
+            } else {
+                statusEl.innerText = '⚪ офлайн';
+                statusEl.style.color = 'inherit';
+            }
+
+            const startDmBtn = document.getElementById('startDmFromProfileBtn');
+            if (username === currentUser) {
+                startDmBtn.style.display = 'none';
+            } else {
+                startDmBtn.style.display = 'block';
+            }
+
+            profileModalOverlay.classList.add('active');
+        }
+
+        document.getElementById('closeProfileModalBtn').addEventListener('click', () => {
+            profileModalOverlay.classList.remove('active');
+        });
+
+        document.getElementById('startDmFromProfileBtn').addEventListener('click', () => {
+            if (viewTargetUser) {
+                profileModalOverlay.classList.remove('active');
+                openChat(viewTargetUser, viewTargetUser, allUsersData[viewTargetUser]?.avatar);
+            }
+        });
+
+        // --- СОХРАНЕНИЕ ПРОФИЛЯ В НАСТРОЙКАХ ---
+        document.getElementById('saveProfileBtn').addEventListener('click', async () => {
+            let newUsernameTag = document.getElementById('setUsernameInput').value.trim().replace(/^@/, '');
+            const newBio = document.getElementById('setBioInput').value.trim();
+            const newAvatar = document.getElementById('setAvatarInput').value.trim() || '🐱';
+
+            if (!newUsernameTag) {
+                alert("Юзернейм не может быть пустым!");
+                return;
+            }
+
+            // Проверка уникальности юзернейма в базе
+            const allUsersSnap = await get(ref(database, 'users'));
+            const allUsers = allUsersSnap.val() || {};
+
+            for (let u in allUsers) {
+                if (u !== currentUser && allUsers[u].usernameTag === newUsernameTag) {
+                    alert(`Юзернейм @${newUsernameTag} уже занят другим пользователем!`);
+                    return;
+                }
+            }
+
+            await update(ref(database, `users/${currentUser}`), {
+                usernameTag: newUsernameTag,
+                bio: newBio,
+                avatar: newAvatar
+            });
+
+            currentUsernameTag = newUsernameTag;
+            currentBio = newBio;
+            currentAvatar = newAvatar;
+
+            alert("Профиль успешно сохранён!");
+            document.getElementById('sidebarDrawer').classList.remove('active');
+            document.getElementById('drawerOverlay').classList.remove('active');
+        });
 
         // --- ПАНЕЛЬ СТИКЕРОВ ---
         const stickersPanel = document.getElementById('stickersPanel');
@@ -1304,7 +1505,7 @@
                         const userAvatar = allUsersData[user] ? allUsersData[user].avatar : '🐱';
 
                         const item = document.createElement('div');
-                        item.style.cssText = "display:flex; align-items:center; gap:10px; padding:6px; border-bottom:1px solid var(--border-color);";
+                        item.style.cssText = "display:flex; align-items:center; gap:10px; padding:6px; border-bottom:1px solid var(--border-color); cursor:pointer;";
                         
                         const avContainer = document.createElement('div');
                         avContainer.className = "msg-avatar";
@@ -1316,6 +1517,12 @@
 
                         item.appendChild(avContainer);
                         item.appendChild(nameEl);
+
+                        item.addEventListener('click', () => {
+                            onlineModalOverlay.classList.remove('active');
+                            openUserProfileModal(user);
+                        });
+
                         onlineModalList.appendChild(item);
                     }
                 });
@@ -1473,7 +1680,6 @@
             }, 120);
         }
 
-        // Синхронизация сыгранных игр с облаком аккаунта
         function savePlayedGame(msgId) {
             if (!playedGames.includes(msgId)) {
                 playedGames.push(msgId);
@@ -1600,17 +1806,11 @@
             drawer.classList.add('active');
             overlay.classList.add('active');
             document.getElementById('setAvatarInput').value = currentAvatar;
+            document.getElementById('setUsernameInput').value = currentUsernameTag;
+            document.getElementById('setBioInput').value = currentBio;
         });
 
         overlay.addEventListener('click', () => {
-            drawer.classList.remove('active');
-            overlay.classList.remove('active');
-        });
-
-        // Сохранение аватара в базу данных (автоматом обновит все подключенные устройства)
-        document.getElementById('saveAvatarBtn').addEventListener('click', async () => {
-            currentAvatar = document.getElementById('setAvatarInput').value.trim() || '🐱';
-            await update(ref(database, 'users/' + currentUser), { avatar: currentAvatar });
             drawer.classList.remove('active');
             overlay.classList.remove('active');
         });
@@ -1626,7 +1826,10 @@
         if (currentUser) {
             get(ref(database, `users/${currentUser}`)).then((userSnap) => {
                 const userData = userSnap.val() || {};
+                currentUserId = userData.id;
+                currentUsernameTag = userData.usernameTag || `user_${userData.id}`;
                 currentAvatar = userData.avatar || '🐱';
+                currentBio = userData.bio || '';
                 const settings = userData.settings || {};
                 applyVisualSettings(settings.theme, settings.font);
                 initApp();
