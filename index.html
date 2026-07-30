@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚠️ РЕЖИМ РЕДАКТИРОВАНИЯ ID ⚠️ - Мир Идиаканта</title>
+    <title>Мессенджер «Мир Идиаканта»</title>
     <style>
         :root {
             --bg-body: #2c1d11;
@@ -11,7 +11,7 @@
             --bg-chats-list: #eae0d5;
             --bg-chat-active: #d1a374;
             --bg-window: #fdfaf6;
-            --bg-header: linear-gradient(135deg, #a30000, #573a23); /* Красный хедер - знак опасности */
+            --bg-header: linear-gradient(135deg, #2c1d11, #573a23);
             --bg-msg-other: #eae0d5;
             --bg-msg-my: #573a23;
             --text-main: #332211;
@@ -27,7 +27,7 @@
             --bg-chats-list: #252525;
             --bg-chat-active: #383838;
             --bg-window: #181818;
-            --bg-header: linear-gradient(135deg, #cf0000, #1f1f1f);
+            --bg-header: linear-gradient(135deg, #2a2a2a, #1f1f1f);
             --bg-msg-other: #2d2d2d;
             --bg-msg-my: #4a3b52;
             --text-main: #e0e0e0;
@@ -42,7 +42,7 @@
             --bg-chats-list: #f0f4f8;
             --bg-chat-active: #d9e2ec;
             --bg-window: #ffffff;
-            --bg-header: linear-gradient(135deg, #ff4141, #243b53);
+            --bg-header: linear-gradient(135deg, #334e68, #243b53);
             --bg-msg-other: #f0f4f8;
             --bg-msg-my: #334e68;
             --text-main: #102a43;
@@ -51,134 +51,596 @@
             --border-color: #bccadc;
         }
 
+        body.theme-neon {
+            --bg-body: #050515;
+            --bg-container: #0a0a23;
+            --bg-chats-list: #101035;
+            --bg-chat-active: #1a1a4a;
+            --bg-window: #070719;
+            --bg-header: linear-gradient(135deg, #12002b, #28004d);
+            --bg-msg-other: #16163d;
+            --bg-msg-my: #0088cc;
+            --text-main: #00ffcc;
+            --text-my: #ffffff;
+            --text-header: #ff007f;
+            --border-color: #ff007f;
+        }
+
         body.font-small { --font-size-msg: 0.8rem; }
         body.font-medium { --font-size-msg: 0.95rem; }
         body.font-large { --font-size-msg: 1.1rem; }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; user-select: none; }
-        body { background-color: var(--bg-body); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 10px; }
-        .messenger-container { width: 100%; max-width: 900px; height: 90vh; background-color: var(--bg-container); border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); display: flex; overflow: hidden; border: 2px solid var(--border-color); position: relative; }
-        
-        /* Шторка */
-        .sidebar-drawer { position: absolute; top: 0; left: -320px; width: 320px; height: 100%; background-color: var(--bg-container); color: var(--text-main); z-index: 30; border-right: 2px solid var(--border-color); transition: left 0.3s ease; display: flex; flex-direction: column; padding: 20px; gap: 12px; overflow-y: auto; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .messenger-container {
+            width: 100%;
+            max-width: 900px;
+            height: 90vh;
+            background-color: var(--bg-container);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            display: flex;
+            overflow: hidden;
+            border: 2px solid var(--border-color);
+            position: relative;
+        }
+
+        .sidebar-drawer {
+            position: absolute;
+            top: 0; left: -320px;
+            width: 320px;
+            height: 100%;
+            background-color: var(--bg-container);
+            color: var(--text-main);
+            z-index: 30;
+            border-right: 2px solid var(--border-color);
+            transition: left 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 12px;
+            overflow-y: auto;
+        }
+
         .sidebar-drawer.active { left: 0; }
-        .drawer-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 29; display: none; }
+
+        .drawer-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 29;
+            display: none;
+        }
+
         .drawer-overlay.active { display: block; }
 
-        /* Настройки */
-        .setting-group { display: flex; flex-direction: column; gap: 5px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
-        .setting-select { padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-window); color: var(--text-main); outline: none; }
+        .setting-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
 
-        /* Список чатов */
-        .chats-list-panel { width: 320px; background-color: var(--bg-chats-list); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; }
-        .chats-header { background: var(--bg-header); color: var(--text-header); padding: 12px 15px; display: flex; align-items: center; gap: 12px; }
-        .menu-btn { background: none; border: none; color: var(--text-header); font-size: 1.3rem; cursor: pointer; }
+        .setting-select {
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-window);
+            color: var(--text-main);
+            outline: none;
+        }
 
-        /* Элемент чата */
-        .chat-item { display: flex; align-items: center; gap: 12px; padding: 12px 15px; cursor: pointer; border-bottom: 1px solid var(--border-color); transition: background 0.2s; position: relative; }
-        .chat-item:hover, .chat-item.active { background-color: var(--bg-chat-active); }
-        .chat-item-avatar { width: 45px; height: 45px; border-radius: 50%; background: var(--bg-msg-my); color: #fff; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; border: 1px solid var(--border-color); flex-shrink: 0; overflow: hidden; position: relative; }
+        .chats-list-panel {
+            width: 320px;
+            background-color: var(--bg-chats-list);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chats-header {
+            background: var(--bg-header);
+            color: var(--text-header);
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .menu-btn {
+            background: none;
+            border: none;
+            color: var(--text-header);
+            font-size: 1.3rem;
+            cursor: pointer;
+        }
+
+        .chat-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border-color);
+            transition: background 0.2s;
+            position: relative;
+        }
+
+        .chat-item:hover, .chat-item.active {
+            background-color: var(--bg-chat-active);
+        }
+
+        .chat-item-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--bg-msg-my);
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            border: 1px solid var(--border-color);
+            flex-shrink: 0;
+            overflow: hidden;
+            position: relative;
+        }
+
         .chat-item-info { flex: 1; overflow: hidden; }
         .chat-item-title { font-weight: bold; color: var(--text-main); font-size: 0.95rem; }
         .chat-item-sub { font-size: 0.8rem; opacity: 0.7; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .online-dot { width: 12px; height: 12px; background-color: #2ec4b6; border-radius: 50%; position: absolute; bottom: 2px; right: 2px; border: 2px solid var(--bg-chats-list); display: none; }
+
+        .online-dot {
+            width: 12px;
+            height: 12px;
+            background-color: #2ec4b6;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            border: 2px solid var(--bg-chats-list);
+            display: none;
+        }
         .online-dot.active { display: block; }
 
-        /* Окно чата */
-        .chat-window { flex: 1; display: flex; flex-direction: column; background-color: var(--bg-window); position: relative; }
-        .chat-window-header { background: var(--bg-header); color: var(--text-header); padding: 12px 15px; display: flex; align-items: center; gap: 10px; border-bottom: 2px solid var(--border-color); cursor: pointer; }
-        .back-btn { display: none; background: none; border: none; color: var(--text-header); font-size: 1.2rem; cursor: pointer; }
-        .chat-status-text { font-size: 0.75rem; opacity: 0.8; font-weight: normal; }
-        .chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; overflow-x: hidden; }
+        .chat-window {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bg-window);
+            position: relative;
+        }
 
-        /* Сообщения */
-        .message-row { display: flex; gap: 8px; max-width: 85%; position: relative; touch-action: pan-y; transition: transform 0.1s ease-out, background-color 0.3s ease, box-shadow 0.2s ease; cursor: pointer; border-radius: 12px; padding: 4px; }
-        .message-row.msg-selected { background-color: rgba(255, 215, 0, 0.25) !important; box-shadow: 0 0 12px #ffd700; }
-        .message-row.highlight-msg { animation: highlightPulse 2s ease-in-out; }
-        @keyframes highlightPulse { 0% { background-color: rgba(255, 215, 0, 0.5); transform: scale(1.02); } 50% { background-color: rgba(255, 215, 0, 0.25); } 100% { background-color: transparent; transform: scale(1); } }
-        .message-row.my-msg { align-self: flex-end; flex-direction: row-reverse; }
-        .msg-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--bg-chat-active); display: flex; justify-content: center; align-items: center; font-size: 0.9rem; flex-shrink: 0; overflow: hidden; border: 1px solid var(--border-color); cursor: pointer; }
-        .msg-bubble { background-color: var(--bg-msg-other); color: var(--text-main); padding: 8px 12px; border-radius: 12px; font-size: var(--font-size-msg); word-break: break-word; position: relative; }
-        .my-msg .msg-bubble { background-color: var(--bg-msg-my); color: var(--text-my); }
-        .msg-author { font-size: 0.75rem; font-weight: bold; opacity: 0.9; margin-bottom: 2px; cursor: pointer; display: inline-block; }
+        .chat-window-header {
+            background: var(--bg-header);
+            color: var(--text-header);
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid var(--border-color);
+            cursor: pointer;
+        }
+
+        .back-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-header);
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .chat-status-text {
+            font-size: 0.75rem;
+            opacity: 0.8;
+            font-weight: normal;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow-x: hidden;
+        }
+
+        .message-row {
+            display: flex;
+            gap: 8px;
+            max-width: 85%;
+            position: relative;
+            touch-action: pan-y;
+            transition: transform 0.1s ease-out, background-color 0.3s ease, box-shadow 0.2s ease;
+            cursor: pointer;
+            border-radius: 12px;
+            padding: 4px;
+        }
+
+        .message-row.msg-selected {
+            background-color: rgba(255, 215, 0, 0.25) !important;
+            box-shadow: 0 0 12px #ffd700;
+        }
+
+        .message-row.highlight-msg {
+            animation: highlightPulse 2s ease-in-out;
+        }
+
+        @keyframes highlightPulse {
+            0% { background-color: rgba(255, 215, 0, 0.5); transform: scale(1.02); }
+            50% { background-color: rgba(255, 215, 0, 0.25); }
+            100% { background-color: transparent; transform: scale(1); }
+        }
+
+        .message-row.my-msg {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .msg-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--bg-chat-active);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+        }
+
+        .msg-bubble {
+            background-color: var(--bg-msg-other);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: var(--font-size-msg);
+            word-break: break-word;
+            position: relative;
+        }
+
+        .my-msg .msg-bubble {
+            background-color: var(--bg-msg-my);
+            color: var(--text-my);
+        }
+
+        .msg-author { 
+            font-size: 0.75rem; 
+            font-weight: bold; 
+            opacity: 0.9; 
+            margin-bottom: 2px;
+            cursor: pointer;
+            display: inline-block;
+        }
         .msg-author:hover { text-decoration: underline; }
+
         .msg-time { font-size: 0.65rem; opacity: 0.7; text-align: right; margin-top: 3px; }
-        .edited-tag { font-size: 0.65rem; font-style: italic; opacity: 0.7; margin-left: 4px; }
-        .sticker-img { max-width: 140px; max-height: 140px; border-radius: 8px; display: block; margin-top: 4px; }
 
-        /* Печатает */
-        .typing-indicator-row { display: none; align-self: flex-start; margin-bottom: 5px; }
-        .typing-indicator-row.active { display: flex; }
-        .typing-bubble { background-color: var(--bg-msg-other); color: var(--text-main); padding: 6px 12px; border-radius: 12px; font-size: 0.8rem; font-style: italic; opacity: 0.85; animation: pulseTyping 1.5s infinite; }
-        @keyframes pulseTyping { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+        .edited-tag {
+            font-size: 0.65rem;
+            font-style: italic;
+            opacity: 0.7;
+            margin-left: 4px;
+        }
 
-        /* Ответ */
-        .reply-preview-bubble { background: rgba(0,0,0,0.15); border-left: 3px solid var(--border-color); padding: 4px 8px; border-radius: 4px; margin-bottom: 5px; font-size: 0.8rem; }
-        .interactive-box { background: #111; color: #fff; padding: 10px; border-radius: 10px; border: 2px solid #ffd700; text-align: center; display: inline-block; margin-top: 5px; cursor: pointer; transition: transform 0.1s; }
+        .sticker-img {
+            max-width: 140px;
+            max-height: 140px;
+            border-radius: 8px;
+            display: block;
+            margin-top: 4px;
+        }
+
+        .typing-indicator-row {
+            display: none;
+            align-self: flex-start;
+            margin-bottom: 5px;
+        }
+        .typing-indicator-row.active {
+            display: flex;
+        }
+        .typing-bubble {
+            background-color: var(--bg-msg-other);
+            color: var(--text-main);
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-style: italic;
+            opacity: 0.85;
+            animation: pulseTyping 1.5s infinite;
+        }
+
+        @keyframes pulseTyping {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+
+        .reply-preview-bubble {
+            background: rgba(0,0,0,0.15);
+            border-left: 3px solid var(--border-color);
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            font-size: 0.8rem;
+        }
+
+        .interactive-box {
+            background: #111;
+            color: #fff;
+            padding: 10px;
+            border-radius: 10px;
+            border: 2px solid #ffd700;
+            text-align: center;
+            display: inline-block;
+            margin-top: 5px;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
         .interactive-box:active { transform: scale(0.97); }
-        .game-display { font-size: 1.8rem; letter-spacing: 3px; background: #222; padding: 5px 12px; border-radius: 6px; border: 1px solid #444; min-width: 140px; }
-        .game-status { font-size: 0.75rem; color: #ffd700; margin-top: 4px; font-weight: bold; }
-        .reply-bar { display: none; background: var(--bg-chats-list); color: var(--text-main); padding: 8px 12px; border-top: 1px solid var(--border-color); align-items: center; justify-content: space-between; gap: 8px; }
+
+        .game-display {
+            font-size: 1.8rem;
+            letter-spacing: 3px;
+            background: #222;
+            padding: 5px 12px;
+            border-radius: 6px;
+            border: 1px solid #444;
+            min-width: 140px;
+        }
+        .game-status {
+            font-size: 0.75rem;
+            color: #ffd700;
+            margin-top: 4px;
+            font-weight: bold;
+        }
+
+        .reply-bar {
+            display: none;
+            background: var(--bg-chats-list);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-top: 1px solid var(--border-color);
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
         .reply-bar.active { display: flex; }
         .reply-bar-info { border-left: 3px solid var(--border-color); padding-left: 8px; flex:1; }
         .close-reply-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-main); }
-        .action-fast-btn { background: var(--bg-header); color: var(--text-header); border: none; padding: 6px 12px; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 0.8rem; }
-        .btn-danger { background: #d90429 !important; color: #fff !important; }
 
-        /* Ввод */
-        .chat-input-area { display: flex; padding: 10px; background-color: var(--bg-container); border-top: 1px solid var(--border-color); gap: 8px; align-items: center; }
-        .chat-input-area input[type="text"] { flex: 1; padding: 10px; border: 1px solid var(--border-color); border-radius: 20px; background: var(--bg-window); color: var(--text-main); outline: none; user-select: text; }
-        .chat-input-area button { background: var(--bg-header); color: var(--text-header); border: none; padding: 10px 14px; border-radius: 20px; cursor: pointer; font-weight: bold; }
-
-        /* СТИКЕРЫ */
-        .stickers-panel { position: absolute; bottom: 60px; right: 10px; width: 320px; height: 280px; background: var(--bg-container); border: 2px solid var(--border-color); border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.4); display: none; flex-direction: column; z-index: 25; padding: 10px; gap: 8px; }
-        .stickers-panel.active { display: flex; }
-        .stickers-tabs { display: flex; gap: 5px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px; }
-        .sticker-tab-btn { background: var(--bg-chats-list); color: var(--text-main); border: none; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; }
-        .sticker-tab-btn.active { background: var(--bg-header); color: var(--text-header); }
-        .stickers-grid { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; overflow-y: auto; padding: 4px; }
-        .sticker-item { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 6px; cursor: pointer; border: 1px solid var(--border-color); transition: transform 0.1s; }
-        .sticker-item:hover { transform: scale(1.08); }
-
-        /* Вход */
-        .auth-screen { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--bg-container); color: var(--text-main); z-index: 40; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; gap: 12px; }
-        .auth-input { width: 100%; max-width: 280px; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-window); color: var(--text-main); outline: none; user-select: text; }
-        .auth-btn { width: 100%; max-width: 280px; padding: 10px; background: var(--bg-header); color: var(--text-header); border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .file-upload-btn { display: inline-block; padding: 8px 12px; background: var(--bg-chat-active); color: var(--text-main); border-radius: 6px; cursor: pointer; font-size: 0.85rem; text-align: center; border: 1px solid var(--border-color); }
-
-        /* МОДАЛЬНЫЕ ОКНА */
-        .modal-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.65); z-index: 50; display: none; justify-content: center; align-items: center; }
-        .modal-overlay.active { display: flex; }
-        .modal-card { background: var(--bg-container); color: var(--text-main); border: 2px solid var(--border-color); border-radius: 16px; width: 90%; max-width: 340px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.6); display: flex; flex-direction: column; gap: 12px; position: relative; }
-
-        /* КАРТОЧКА ПРОФИЛЯ */
-        .profile-card-header { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
-        .profile-card-avatar { width: 90px; height: 90px; border-radius: 50%; border: 3px solid var(--border-color); overflow: hidden; display: flex; justify-content: center; align-items: center; font-size: 2.5rem; background: var(--bg-msg-my); box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        .profile-badge { background: var(--bg-header); color: var(--text-header); padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: bold; }
-        .profile-bio-box { background: var(--bg-window); border: 1px solid var(--border-color); padding: 10px; border-radius: 8px; font-size: 0.85rem; max-height: 100px; overflow-y: auto; white-space: pre-wrap; word-break: break-word; }
-
-        /* СТИЛИ ДЛЯ ВРЕМЕННОГО РЕДАКТИРОВАНИЯ ID */
-        .admin-id-input {
-            width: 70px;
-            padding: 2px 5px;
-            border: 2px solid #a30000;
-            border-radius: 5px;
-            background: #fff;
-            color: #000;
+        .action-fast-btn {
+            background: var(--bg-header);
+            color: var(--text-header);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 12px;
+            cursor: pointer;
             font-weight: bold;
-            text-align: center;
+            font-size: 0.8rem;
+        }
+
+        .btn-danger {
+            background: #d90429 !important;
+            color: #fff !important;
+        }
+
+        .chat-input-area {
+            display: flex;
+            padding: 10px;
+            background-color: var(--bg-container);
+            border-top: 1px solid var(--border-color);
+            gap: 8px;
+            align-items: center;
+        }
+
+        .chat-input-area input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            background: var(--bg-window);
+            color: var(--text-main);
+            outline: none;
             user-select: text;
         }
-        .admin-save-id-btn {
-            background: #a30000;
-            color: #fff;
+
+        .chat-input-area button {
+            background: var(--bg-header);
+            color: var(--text-header);
             border: none;
-            padding: 8px;
-            border-radius: 8px;
-            font-weight: bold;
+            padding: 10px 14px;
+            border-radius: 20px;
             cursor: pointer;
-            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        .stickers-panel {
+            position: absolute;
+            bottom: 60px;
+            right: 10px;
+            width: 320px;
+            height: 280px;
+            background: var(--bg-container);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+            display: none;
+            flex-direction: column;
+            z-index: 25;
+            padding: 10px;
+            gap: 8px;
+        }
+        .stickers-panel.active { display: flex; }
+        .stickers-tabs { display: flex; gap: 5px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px; }
+        .sticker-tab-btn {
+            background: var(--bg-chats-list);
+            color: var(--text-main);
+            border: none;
+            padding: 4px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        .sticker-tab-btn.active {
+            background: var(--bg-header);
+            color: var(--text-header);
+        }
+        .stickers-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            overflow-y: auto;
+            padding: 4px;
+        }
+        .sticker-item {
             width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            transition: transform 0.1s;
+        }
+        .sticker-item:hover { transform: scale(1.08); }
+
+        .auth-screen {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--bg-container);
+            color: var(--text-main);
+            z-index: 40;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            gap: 12px;
+        }
+
+        .auth-input {
+            width: 100%;
+            max-width: 280px;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-window);
+            color: var(--text-main);
+            outline: none;
+            user-select: text;
+        }
+
+        .auth-btn {
+            width: 100%;
+            max-width: 280px;
+            padding: 10px;
+            background: var(--bg-header);
+            color: var(--text-header);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .file-upload-btn {
+            display: inline-block;
+            padding: 8px 12px;
+            background: var(--bg-chat-active);
+            color: var(--text-main);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        /* МОДАЛЬНЫЕ ОКНА */
+        .modal-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.65);
+            z-index: 50;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-card {
+            background: var(--bg-container);
+            color: var(--text-main);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 340px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            position: relative;
+        }
+
+        /* КАРТОЧКА ПРОФИЛЯ */
+        .profile-card-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            text-align: center;
+        }
+        .profile-card-avatar {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            border: 3px solid var(--border-color);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem;
+            background: var(--bg-msg-my);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .profile-badge {
+            background: var(--bg-header);
+            color: var(--text-header);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .profile-bio-box {
+            background: var(--bg-window);
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            max-height: 100px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
         }
 
         @media (max-width: 650px) {
@@ -195,7 +657,7 @@
     <div class="messenger-container" id="messenger">
         <div class="drawer-overlay" id="drawerOverlay"></div>
 
-        <!-- МОДАЛКА ПРОСМОТРА ПРОФИЛЯ (С ВОЗМОЖНОСТЬЮ РЕДАКТИРОВАТЬ ID) -->
+        <!-- МОДАЛКА ПРОСМОТРА ПРОФИЛЯ ПОЛЬЗОВАТЕЛЯ -->
         <div class="modal-overlay" id="profileModalOverlay">
             <div class="modal-card">
                 <button class="close-reply-btn" id="closeProfileModalBtn" style="position:absolute; top:12px; right:12px;">✕</button>
@@ -204,8 +666,7 @@
                     <h2 id="viewProfileName" style="font-size:1.3rem;">Имя</h2>
                     <div style="display:flex; gap:6px; align-items:center;">
                         <span id="viewProfileUsername" style="color:#ffd700; font-weight:bold; font-size:0.9rem;">@username</span>
-                        <!-- ВРЕМЕННОЕ ИЗМЕНЕНИЕ: ID стал полем ввода -->
-                        <span class="profile-badge">ID: <input type="number" id="viewProfileIdInput" class="admin-id-input" placeholder="NULL"></span>
+                        <span class="profile-badge" id="viewProfileId">ID: 0</span>
                     </div>
                     <div id="viewProfileStatus" style="font-size:0.75rem; opacity:0.8;">⚪ офлайн</div>
                 </div>
@@ -213,10 +674,6 @@
                     <label style="font-size:0.75rem; font-weight:bold; opacity:0.8;">О себе:</label>
                     <div class="profile-bio-box" id="viewProfileBio">Описание отсутсвует</div>
                 </div>
-                
-                <!-- ВРЕМЕННАЯ КНОПКА СОХРАНЕНИЯ ID -->
-                <button class="admin-save-id-btn" id="adminSaveUserIdBtn">⚠️ Сохранить ID (ВРЕМЕННО)</button>
-                
                 <button class="auth-btn" id="startDmFromProfileBtn" style="width:100%; margin-top:5px;">💬 Написать сообщение</button>
             </div>
         </div>
@@ -240,8 +697,7 @@
                 <div id="drawerAvatar" class="chat-item-avatar" style="width:75px; height:75px; margin:0 auto; font-size:2rem;">🐱</div>
                 <h4 id="drawerUsername" style="margin-top:5px;">Имя</h4>
                 <div id="drawerUserTag" style="font-size:0.85rem; color:#ffd700; font-weight:bold;">@username</div>
-                <!-- ID в настройках тоже временно делаем редактируемым для себя -->
-                <div style="font-size:0.75rem; opacity:0.7;">ID: <input type="number" id="drawerUserIdInput" class="admin-id-input" style="border-color:var(--border-color);"></div>
+                <div id="drawerUserId" style="font-size:0.75rem; opacity:0.7;">ID: --</div>
             </div>
 
             <div class="setting-group">
@@ -264,7 +720,7 @@
                 </label>
             </div>
 
-            <button class="auth-btn" id="saveProfileBtn" style="background:#2ec4b6; color:#fff;">💾 Сохранить профиль (и мой ID)</button>
+            <button class="auth-btn" id="saveProfileBtn" style="background:#2ec4b6; color:#fff;">💾 Сохранить профиль</button>
 
             <div class="setting-group">
                 <label>Тема оформления:</label>
@@ -288,10 +744,9 @@
             <button class="auth-btn btn-danger" id="logoutBtn" style="margin-top: auto;">Выйти с аккаунта</button>
         </div>
 
-        <!-- ЭКРАН ВХОДА (ОТКЛЮЧЕНА АВТОГЕНЕРАЦИЯ ID ДЛЯ НОВЫХ) -->
+        <!-- ЭКРАН ВХОДА -->
         <div class="auth-screen" id="authScreen">
             <h2>🐾 Мир Идиаканта</h2>
-            <h4 style="color:#a30000;">⚠️ РЕЖИМ РУЧНОЙ НАСТРОЙКИ ID ⚠️</h4>
             <input type="text" id="authUsername" class="auth-input" placeholder="Логин (Никнейм)">
             
             <div style="width:100%; max-width:280px; text-align:center;">
@@ -381,7 +836,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, push, onChildAdded, onChildChanged, onChildRemoved, onValue, set, remove, update, onDisconnect, off, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, push, onChildAdded, onChildChanged, onChildRemoved, onValue, set, remove, update, onDisconnect, off, get, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyByKktnwPbg1zBU4wYR8hceDc57BR0Y4Zo",
@@ -409,20 +864,25 @@
         let activeChatId = 'global';
         let currentChatRef = null;
         let allUsersData = {};
-        let viewTargetUser = null; // Кого сейчас просматриваем в модалке
+        let viewTargetUser = null;
 
         let selectedMsgData = null;
         let editingMsgId = null;
         let typingTimeout = null;
 
+        // UI Элементы
         const authScreen = document.getElementById('authScreen');
         const messenger = document.getElementById('messenger');
         const chatMessages = document.getElementById('chatMessages');
         const chatsList = document.getElementById('chatsList');
         const replyBar = document.getElementById('replyBar');
+        const repeatGameBtn = document.getElementById('repeatGameBtn');
+        const editMsgBtn = document.getElementById('editMsgBtn');
+        const deleteMsgBtn = document.getElementById('deleteMsgBtn');
+        const userInput = document.getElementById('userInput');
+
         const themeSelect = document.getElementById('themeSelect');
         const fontSelect = document.getElementById('fontSelect');
-        const userInput = document.getElementById('userInput');
 
         function applyVisualSettings(theme, font) {
             currentTheme = theme || 'theme-classic';
@@ -455,22 +915,38 @@
                         const canvas = document.createElement('canvas');
                         let width = img.width;
                         let height = img.height;
-                        if (width > height) { if (width > maxWidth) { height = Math.round((height * maxWidth) / width); width = maxWidth; } } 
-                        else { if (height > maxHeight) { width = Math.round((width * maxHeight) / height); height = maxHeight; } }
-                        canvas.width = width; canvas.height = height;
-                        const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height);
+
+                        if (width > height) {
+                            if (width > maxWidth) {
+                                height = Math.round((height * maxWidth) / width);
+                                width = maxWidth;
+                            }
+                        } else {
+                            if (height > maxHeight) {
+                                width = Math.round((width * maxHeight) / height);
+                                height = maxHeight;
+                            }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
                         resolve(canvas.toDataURL('image/webp', 0.8));
                     };
                     img.src = e.target.result;
                 };
-                reader.onerror = reject; reader.readAsDataURL(file);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
             });
         }
 
         function renderAvatar(element, avatarData) {
             if (avatarData && (avatarData.startsWith('data:image/') || avatarData.startsWith('http://') || avatarData.startsWith('https://'))) {
                 element.innerHTML = `<img src="${avatarData}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
-            } else { element.innerText = avatarData || '🐱'; }
+            } else {
+                element.innerText = avatarData || '🐱';
+            }
         }
 
         document.getElementById('authAvatarFile').addEventListener('change', async (e) => {
@@ -489,12 +965,23 @@
             }
         });
 
-        // --- ВХОД (БЕЗ АВТОГЕНЕРАЦИИ ID ДЛЯ НОВЫХ) ---
+        // Генерация ультимативного порядкового ID (начиная с 1)
+        async function getNextUserId() {
+            const countRef = ref(database, 'users_count');
+            const result = await runTransaction(countRef, (currentCount) => {
+                return (currentCount || 0) + 1;
+            });
+            return result.snapshot.val();
+        }
+
         document.getElementById('startBtn').addEventListener('click', async () => {
             const user = document.getElementById('authUsername').value.trim();
             const inputAvatar = document.getElementById('authAvatar').value.trim();
 
-            if (!user) { alert("Введите никнейм!"); return; }
+            if (!user) {
+                alert("Введите никнейм!");
+                return;
+            }
 
             currentUser = user;
             localStorage.setItem('idi_user', user);
@@ -503,15 +990,18 @@
             const userSnap = await get(userRef);
             let userData = userSnap.val() || {};
 
-            // ВО ВРЕМЕННОМ КОДЕ МЫ НЕ ПРИСВАИВАЕМ ID АВТОМАТИЧЕСКИ ПРИ ВХОДЕ
-            currentUserId = userData.id || null; // Может быть null у старых
-            currentUsernameTag = userData.usernameTag || `user_tbd`; // tbd - to be defined
+            if (!userData.id) {
+                userData.id = await getNextUserId();
+            }
+
+            currentUserId = userData.id;
+            currentUsernameTag = userData.usernameTag || `user_${currentUserId}`;
             currentAvatar = inputAvatar || userData.avatar || '🐱';
             currentBio = userData.bio || '';
             const settings = userData.settings || {};
 
             await update(userRef, {
-                // id: currentUserId, // Не обновляем, если null
+                id: currentUserId,
                 usernameTag: currentUsernameTag,
                 avatar: currentAvatar,
                 bio: currentBio,
@@ -532,20 +1022,16 @@
             onValue(ref(database, `users/${currentUser}`), (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
-                    currentUserId = data.id || null;
-                    currentUsernameTag = data.usernameTag || `user_tbd`;
+                    currentUserId = data.id;
+                    currentUsernameTag = data.usernameTag || `user_${data.id}`;
                     currentAvatar = data.avatar || '🐱';
                     currentBio = data.bio || '';
 
                     renderAvatar(document.getElementById('drawerAvatar'), currentAvatar);
-                    
-                    // ВРЕМЕННО: ID в настройках тоже инпут
-                    document.getElementById('drawerUserIdInput').value = currentUserId; 
-                    
+                    document.getElementById('drawerUserId').innerText = `ID: ${currentUserId}`;
                     document.getElementById('drawerUserTag').innerText = `@${currentUsernameTag}`;
                     document.getElementById('setUsernameInput').value = currentUsernameTag;
                     document.getElementById('setBioInput').value = currentBio;
-                    document.getElementById('setAvatarInput').value = currentAvatar;
 
                     if (data.settings) applyVisualSettings(data.settings.theme, data.settings.font);
                     if (data.playedGames) playedGames = data.playedGames;
@@ -558,68 +1044,15 @@
             setupTypingEvents();
             loadStickers('general');
 
-            onValue(ref(database, 'status'), () => { updateHeaderStatus(); });
+            onValue(ref(database, 'status'), () => {
+                updateHeaderStatus();
+            });
         }
-
-        // --- Функция для принудительного сохранения ID любого пользователя ---
-        async function adminForceSaveUserId(targetUsername, newIdString) {
-            if (!targetUsername) return;
-            
-            let newId = null;
-            if (newIdString.trim() !== "") {
-                newId = parseInt(newIdString);
-                if (isNaN(newId)) { alert("ID должен быть числом!"); return; }
-            }
-
-            // 1. Проверка на уникальность ID (очень простая)
-            if (newId !== null) {
-                const allUsersSnap = await get(ref(database, 'users'));
-                const allUsers = allUsersSnap.val() || {};
-                for (let u in allUsers) {
-                    if (u !== targetUsername && allUsers[u].id === newId) {
-                        alert(`ОШИБКА: ID ${newId} уже используется пользователем ${u}. Сначала измените ID ему.`);
-                        return;
-                    }
-                }
-            }
-
-            // 2. Сохранение
-            try {
-                // Обновляем ID
-                await update(ref(database, `users/${targetUsername}`), { id: newId });
-                
-                // Если юзернейм был стандартным (user_tbd), обновляем его на основе нового ID
-                if (newId !== null) {
-                    const userSnap = await get(ref(database, `users/${targetUsername}`));
-                    const currentTag = userSnap.val()?.usernameTag;
-                    if (!currentTag || currentTag === 'user_tbd') {
-                         await update(ref(database, `users/${targetUsername}`), { usernameTag: `user_${newId}` });
-                    }
-                }
-
-                alert(`ID для ${targetUsername} успешно изменен на ${newId === null ? 'NULL' : newId}.`);
-                
-                // Если редактировали себя в шторке, модалка не откроется, если другого - обновим модалку
-                if (document.getElementById('profileModalOverlay').classList.contains('active') && viewTargetUser === targetUsername) {
-                     openUserProfileModal(targetUsername); // Перерисовать
-                }
-
-            } catch (e) {
-                alert("Ошибка при сохранении в базу: " + e.message);
-            }
-        }
-
-        // Обработчик кнопки сохранения в модалке профиля
-        document.getElementById('adminSaveUserIdBtn').addEventListener('click', () => {
-            const newIdStr = document.getElementById('viewProfileIdInput').value;
-            adminForceSaveUserId(viewTargetUser, newIdStr);
-        });
-
-        // --- ОСТАЛЬНАЯ ЛОГИКА (БЕЗ ИЗМЕНЕНИЙ, КРОМЕ ОТОБРАЖЕНИЯ ID) ---
 
         function setupPresence() {
             const myStatusRef = ref(database, 'status/' + currentUser);
             const connectedRef = ref(database, '.info/connected');
+
             onValue(connectedRef, (snap) => {
                 if (snap.val() === true) {
                     onDisconnect(myStatusRef).set({ state: 'offline', last_changed: Date.now() });
@@ -632,8 +1065,11 @@
             userInput.addEventListener('input', () => {
                 if (!currentUser) return;
                 set(ref(database, `typing/${activeChatId}/${currentUser}`), true);
+
                 clearTimeout(typingTimeout);
-                typingTimeout = setTimeout(() => { set(ref(database, `typing/${activeChatId}/${currentUser}`), false); }, 2000);
+                typingTimeout = setTimeout(() => {
+                    set(ref(database, `typing/${activeChatId}/${currentUser}`), false);
+                }, 2000);
             });
         }
 
@@ -653,14 +1089,16 @@
                         </div>
                         <div class="chat-item-info">
                             <div class="chat-item-title">${username}</div>
-                            <div class="chat-item-sub" id="sub-${username}">@${data.usernameTag || 'user_tbd'}</div>
+                            <div class="chat-item-sub" id="sub-${username}">@${data.usernameTag || 'user'}</div>
                         </div>
                     `;
+
                     chatItem.addEventListener('click', () => {
                         document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
                         chatItem.classList.add('active');
                         openChat(username, username, data.avatar);
                     });
+
                     chatsList.appendChild(chatItem);
                     renderAvatar(document.getElementById('avatar-col-' + username), data.avatar);
 
@@ -668,62 +1106,95 @@
                         const newUserData = userSnap.val();
                         if (newUserData) {
                             allUsersData[username] = newUserData;
-                            renderAvatar(document.getElementById('avatar-col-' + username), newUserData.avatar);
+                            const col = document.getElementById('avatar-col-' + username);
+                            if (col) renderAvatar(col, newUserData.avatar);
                             const sub = document.getElementById('sub-' + username);
-                            if (sub && !sub.innerText.includes('печатает')) { sub.innerText = `@${newUserData.usernameTag || 'user_tbd'}`; }
+                            if (sub && !sub.innerText.includes('печатает')) {
+                                sub.innerText = `@${newUserData.usernameTag || 'user'}`;
+                            }
                         }
                     });
+
                     onValue(ref(database, 'status/' + username), (snap) => {
                         const statusData = snap.val();
                         const dot = document.getElementById('dot-' + username);
-                        if (dot) { if (statusData?.state === 'online') dot.classList.add('active'); else dot.classList.remove('active'); }
+                        const isOnline = statusData && statusData.state === 'online';
+
+                        if (dot) {
+                            if (isOnline) dot.classList.add('active');
+                            else dot.classList.remove('active');
+                        }
                     });
+
                     onValue(ref(database, `typing/${username}/${username}`), (snap) => {
                         const isTyping = snap.val();
                         const sub = document.getElementById('sub-' + username);
                         if (sub) {
-                            sub.innerText = isTyping ? '✍️ печатает...' : `@${allUsersData[username]?.usernameTag || 'user_tbd'}`;
+                            sub.innerText = isTyping ? '✍️ печатает...' : `@${allUsersData[username]?.usernameTag || 'user'}`;
                             sub.style.color = isTyping ? '#ffd700' : 'inherit';
                         }
-                        if (activeChatId === username) toggleInMessageTyping(username, isTyping);
+                        if (activeChatId === username) {
+                            toggleInMessageTyping(username, isTyping);
+                        }
                     });
                 }
             });
+
             onValue(ref(database, `typing/global`), (snap) => {
                 const typers = snap.val() || {};
                 const activeTypers = Object.keys(typers).filter(u => u !== currentUser && typers[u]);
                 const sub = document.getElementById('globalTypingSub');
                 if (sub) {
-                    if (activeTypers.length > 0) { sub.innerText = `✍️ ${activeTypers.join(', ')} печатает...`; sub.style.color = '#ffd700'; } 
-                    else { sub.innerText = 'Все жители Идиаканта'; sub.style.color = 'inherit'; }
+                    if (activeTypers.length > 0) {
+                        sub.innerText = `✍️ ${activeTypers.join(', ')} печатает...`;
+                        sub.style.color = '#ffd700';
+                    } else {
+                        sub.innerText = 'Все жители Идиаканта';
+                        sub.style.color = 'inherit';
+                    }
                 }
-                if (activeChatId === 'global') toggleInMessageTyping(activeTypers.join(', '), activeTypers.length > 0);
+                if (activeChatId === 'global') {
+                    toggleInMessageTyping(activeTypers.join(', '), activeTypers.length > 0);
+                }
             });
         }
 
         function toggleInMessageTyping(authorName, isTyping) {
             const typingRow = document.getElementById('typingIndicatorRow');
+            const typingAvatar = document.getElementById('typingAvatar');
+            const typingText = document.getElementById('typingText');
+
             if (isTyping) {
                 const userAvatar = allUsersData[authorName] ? allUsersData[authorName].avatar : '✍️';
-                renderAvatar(document.getElementById('typingAvatar'), userAvatar);
-                document.getElementById('typingText').innerText = `${authorName} печатает...`;
-                typingRow.classList.add('active'); chatMessages.scrollTop = chatMessages.scrollHeight;
-            } else { typingRow.classList.remove('active'); }
+                renderAvatar(typingAvatar, userAvatar);
+                typingText.innerText = `${authorName} печатает...`;
+                typingRow.classList.add('active');
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            } else {
+                typingRow.classList.remove('active');
+            }
         }
 
         function updateHeaderStatus() {
             const statusEl = document.getElementById('activeChatStatus');
+
             if (activeChatId === 'global') {
                 onValue(ref(database, 'status'), (snap) => {
                     const statuses = snap.val() || {};
                     const onlineCount = Object.values(statuses).filter(s => s.state === 'online').length;
-                    statusEl.innerText = `🟢 ${onlineCount} в сети (нажми на чат)`; statusEl.style.color = '#2ec4b6';
+                    statusEl.innerText = `🟢 ${onlineCount} в сети (нажми на чат)`;
+                    statusEl.style.color = '#2ec4b6';
                 }, { onlyOnce: true });
             } else {
                 onValue(ref(database, 'status/' + activeChatId), (snap) => {
                     const data = snap.val();
-                    if (data?.state === 'online') { statusEl.innerText = '🟢 онлайн'; statusEl.style.color = '#2ec4b6'; } 
-                    else { statusEl.innerText = '⚪ офлайн'; statusEl.style.color = 'inherit'; }
+                    if (data && data.state === 'online') {
+                        statusEl.innerText = '🟢 онлайн';
+                        statusEl.style.color = '#2ec4b6';
+                    } else {
+                        statusEl.innerText = '⚪ офлайн';
+                        statusEl.style.color = 'inherit';
+                    }
                 }, { onlyOnce: true });
             }
         }
@@ -732,206 +1203,636 @@
             activeChatId = chatId;
             document.getElementById('activeChatTitle').innerText = title;
             renderAvatar(document.getElementById('activeChatAvatar'), avatar);
-            chatMessages.innerHTML = ''; messenger.classList.add('open-chat'); cancelReply(); toggleInMessageTyping('', false);
+            
+            chatMessages.innerHTML = '';
+            messenger.classList.add('open-chat');
+            cancelReply();
+            toggleInMessageTyping('', false);
+
             if (currentChatRef) off(currentChatRef);
+
             updateHeaderStatus();
-            let chatDbPath = (chatId === 'global') ? 'global_chat' : 'private_chats/' + [currentUser, chatId].sort().join('_');
+
+            let chatDbPath = 'global_chat';
+            if (chatId !== 'global') {
+                const pair = [currentUser, chatId].sort().join('_');
+                chatDbPath = 'private_chats/' + pair;
+            }
+
             currentChatRef = ref(database, chatDbPath);
-            onChildAdded(currentChatRef, (snapshot) => { if (!document.getElementById('msg-' + snapshot.key)) renderSingleMessage(snapshot.val(), snapshot.key); });
+
+            onChildAdded(currentChatRef, (snapshot) => {
+                if (!document.getElementById('msg-' + snapshot.key)) {
+                    renderSingleMessage(snapshot.val(), snapshot.key);
+                }
+            });
+
             onChildChanged(currentChatRef, (snapshot) => {
                 const msgEl = document.getElementById('msg-' + snapshot.key);
                 if (msgEl) {
-                    const data = snapshot.val(); const txt = msgEl.querySelector('.msg-text');
-                    if (txt && !data.sticker) txt.innerHTML = `${data.text} <span class="edited-tag">(изм.)</span>`;
+                    const data = snapshot.val();
+                    const textContainer = msgEl.querySelector('.msg-text');
+                    if (textContainer && !data.sticker) {
+                        textContainer.innerHTML = `${data.text} <span class="edited-tag">(изм.)</span>`;
+                    }
                 }
             });
-            onChildRemoved(currentChatRef, (snapshot) => { const msgEl = document.getElementById('msg-' + snapshot.key); if (msgEl) msgEl.remove(); });
+
+            onChildRemoved(currentChatRef, (snapshot) => {
+                const msgEl = document.getElementById('msg-' + snapshot.key);
+                if (msgEl) msgEl.remove();
+            });
         }
 
         function renderSingleMessage(data, msgId) {
-            const row = document.createElement('div'); row.className = `message-row ${data.author === currentUser ? 'my-msg' : ''}`; row.id = `msg-${msgId}`;
-            const avDiv = document.createElement('div'); avDiv.className = 'msg-avatar'; renderAvatar(avDiv, data.avatar);
-            avDiv.addEventListener('click', (e) => { e.stopPropagation(); openUserProfileModal(data.author); });
-            const bubble = document.createElement('div'); bubble.className = 'msg-bubble';
-            let replyHTML = data.replyTo ? `<div class="reply-preview-bubble reply-preview-clickable" style="cursor: pointer;"><div class="reply-author">${data.replyTo.author}</div><div>${data.replyTo.text}</div></div>` : '';
-            let mainContent = data.sticker ? `<img src="${data.sticker}" class="sticker-img">` : `<div class="msg-text">${data.text || ''} ${data.isEdited ? '<span class="edited-tag">(изм.)</span>' : ''}</div>`;
-            let gameHTML = ''; const hasPlayed = playedGames.includes(msgId);
+            const row = document.createElement('div');
+            row.className = `message-row ${data.author === currentUser ? 'my-msg' : ''}`;
+            row.id = `msg-${msgId}`;
+
+            const avatarDiv = document.createElement('div');
+            avatarDiv.className = 'msg-avatar';
+            renderAvatar(avatarDiv, data.avatar);
+            
+            // Нажатие на аватар -> Открыть профиль
+            avatarDiv.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openUserProfileModal(data.author);
+            });
+
+            const bubble = document.createElement('div');
+            bubble.className = 'msg-bubble';
+
+            let replyHTML = '';
+            if (data.replyTo) {
+                replyHTML = `
+                    <div class="reply-preview-bubble reply-preview-clickable" style="cursor: pointer;">
+                        <div class="reply-author">${data.replyTo.author}</div>
+                        <div>${data.replyTo.text}</div>
+                    </div>
+                `;
+            }
+
+            let mainContent = `<div class="msg-text">${data.text || ''} ${data.isEdited ? '<span class="edited-tag">(изм.)</span>' : ''}</div>`;
+            
+            if (data.sticker) {
+                mainContent = `<img src="${data.sticker}" class="sticker-img">`;
+            }
+
+            let gameHTML = '';
+            const hasPlayed = playedGames.includes(msgId);
+
             if (data.text === '🎰') {
-                const gId = 'game-' + msgId; gameHTML = `<div class="interactive-box" id="box-${gId}"><div class="game-display" id="${gId}">🎰 🎰 🎰</div><div class="game-status" id="${gId}-status">...</div></div>`;
-                mainContent = ''; setTimeout(() => handleCasinoLogic(gId, data.gameResult, msgId, hasPlayed), 100);
+                const gameId = 'game-' + msgId;
+                gameHTML = `<div class="interactive-box" id="box-${gameId}"><div class="game-display" id="${gameId}">🎰 🎰 🎰</div><div class="game-status" id="${gameId}-status">...</div></div>`;
+                mainContent = '';
+                const gameResult = data.gameResult || data.casinoResult; 
+                setTimeout(() => handleCasinoLogic(gameId, gameResult, msgId, hasPlayed), 100);
             }
+
             if (data.text === '⚽') {
-                const gId = 'game-' + msgId; gameHTML = `<div class="interactive-box" id="box-${gId}"><div class="game-display" id="${gId}">🥅 🧤 ⚽</div><div class="game-status" id="${gId}-status">Удар...</div></div>`;
-                mainContent = ''; setTimeout(() => handleFootballLogic(gId, data.gameResult, msgId, hasPlayed), 100);
+                const gameId = 'game-' + msgId;
+                gameHTML = `<div class="interactive-box" id="box-${gameId}"><div class="game-display" id="${gameId}">🥅 🧤 ⚽</div><div class="game-status" id="${gameId}-status">Удар...</div></div>`;
+                mainContent = '';
+                setTimeout(() => handleFootballLogic(gameId, data.gameResult, msgId, hasPlayed), 100);
             }
-            bubble.innerHTML = `<div class="msg-author" id="author-${msgId}">${data.author}</div>${replyHTML}${mainContent}${gameHTML}<div class="msg-time">${data.time}</div>`;
-            row.appendChild(avDiv); row.appendChild(bubble);
-            const authorEl = bubble.querySelector(`#author-${msgId}`); if (authorEl) authorEl.addEventListener('click', (e) => { e.stopPropagation(); openUserProfileModal(data.author); });
-            const replyP = bubble.querySelector('.reply-preview-clickable'); if (replyP && data.replyTo?.msgId) replyP.addEventListener('click', (e) => { e.stopPropagation(); scrollToMessage(data.replyTo.msgId); });
-            attachLongPressMenu(row, { ...data, msgId: msgId }); attachSwipeToReply(row, { ...data, msgId: msgId });
-            chatMessages.appendChild(row); chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            bubble.innerHTML = `
+                <div class="msg-author" id="author-${msgId}">${data.author}</div>
+                ${replyHTML}
+                ${mainContent}
+                ${gameHTML}
+                <div class="msg-time">${data.time}</div>
+            `;
+
+            row.appendChild(avatarDiv);
+            row.appendChild(bubble);
+
+            // Нажатие на Имя автора -> Открыть профиль
+            const authorEl = bubble.querySelector(`#author-${msgId}`);
+            if (authorEl) {
+                authorEl.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openUserProfileModal(data.author);
+                });
+            }
+
+            const replyPreview = bubble.querySelector('.reply-preview-clickable');
+            if (replyPreview && data.replyTo && data.replyTo.msgId) {
+                replyPreview.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    scrollToMessage(data.replyTo.msgId);
+                });
+            }
+
+            attachLongPressMenu(row, { ...data, msgId: msgId });
+            attachSwipeToReply(row, { ...data, msgId: msgId });
+
+            chatMessages.appendChild(row);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        // --- МОДАЛКА ПРОФИЛЯ (ОБНОВЛЕНА ДЛЯ ОТОБРАЖЕНИЯ ID В ИНПУТЕ) ---
+        // --- МОДАЛЬНОЕ ОКНО ПРОФИЛЯ ПОЛЬЗОВАТЕЛЯ ---
+        const profileModalOverlay = document.getElementById('profileModalOverlay');
+
         async function openUserProfileModal(username) {
             viewTargetUser = username;
-            const userSnap = await get(ref(database, `users/${username}`)); const userData = userSnap.val() || {};
-            const statusSnap = await get(ref(database, `status/${username}`)); const statusData = statusSnap.val();
+            
+            const userSnap = await get(ref(database, `users/${username}`));
+            const userData = userSnap.val() || {};
+            const statusSnap = await get(ref(database, `status/${username}`));
+            const statusData = statusSnap.val();
 
             renderAvatar(document.getElementById('viewProfileAvatar'), userData.avatar);
             document.getElementById('viewProfileName').innerText = username;
-            document.getElementById('viewProfileUsername').innerText = `@${userData.usernameTag || 'user_tbd'}`;
-            
-            // ВРЕМЕННО: ID в инпут
-            document.getElementById('viewProfileIdInput').value = userData.id || ''; 
-            
+            document.getElementById('viewProfileUsername').innerText = `@${userData.usernameTag || 'user'}`;
+            document.getElementById('viewProfileId').innerText = `ID: ${userData.id || '?'}`;
             document.getElementById('viewProfileBio').innerText = userData.bio || 'Описание пока не добавлено...';
+
             const statusEl = document.getElementById('viewProfileStatus');
-            if (statusData?.state === 'online') { statusEl.innerText = '🟢 онлайн'; statusEl.style.color = '#2ec4b6'; } 
-            else { statusEl.innerText = '⚪ офлайн'; statusEl.style.color = 'inherit'; }
-            
-            document.getElementById('startDmFromProfileBtn').style.display = (username === currentUser) ? 'none' : 'block';
-            document.getElementById('profileModalOverlay').classList.add('active');
+            if (statusData && statusData.state === 'online') {
+                statusEl.innerText = '🟢 онлайн';
+                statusEl.style.color = '#2ec4b6';
+            } else {
+                statusEl.innerText = '⚪ офлайн';
+                statusEl.style.color = 'inherit';
+            }
+
+            const startDmBtn = document.getElementById('startDmFromProfileBtn');
+            if (username === currentUser) {
+                startDmBtn.style.display = 'none';
+            } else {
+                startDmBtn.style.display = 'block';
+            }
+
+            profileModalOverlay.classList.add('active');
         }
 
-        document.getElementById('closeProfileModalBtn').addEventListener('click', () => { document.getElementById('profileModalOverlay').classList.remove('active'); });
-        document.getElementById('startDmFromProfileBtn').addEventListener('click', () => { if (viewTargetUser) { document.getElementById('profileModalOverlay').classList.remove('active'); openChat(viewTargetUser, viewTargetUser, allUsersData[viewTargetUser]?.avatar); } });
+        document.getElementById('closeProfileModalBtn').addEventListener('click', () => {
+            profileModalOverlay.classList.remove('active');
+        });
 
-        // --- СОХРАНЕНИЕ СВОЕГО ПРОФИЛЯ (ВКЛЮЧАЯ РУЧНОЙ ID) ---
+        document.getElementById('startDmFromProfileBtn').addEventListener('click', () => {
+            if (viewTargetUser) {
+                profileModalOverlay.classList.remove('active');
+                openChat(viewTargetUser, viewTargetUser, allUsersData[viewTargetUser]?.avatar);
+            }
+        });
+
+        // --- СОХРАНЕНИЕ ПРОФИЛЯ В НАСТРОЙКАХ ---
         document.getElementById('saveProfileBtn').addEventListener('click', async () => {
             let newUsernameTag = document.getElementById('setUsernameInput').value.trim().replace(/^@/, '');
             const newBio = document.getElementById('setBioInput').value.trim();
             const newAvatar = document.getElementById('setAvatarInput').value.trim() || '🐱';
-            
-            // ВРЕМЕННО: Получаем ID из инпута в шторке
-            const newIdStr = document.getElementById('drawerUserIdInput').value;
 
-            if (!newUsernameTag) { alert("Юзернейм не может быть пустым!"); return; }
-
-            // 1. Проверка уникальности юзернейма
-            const allUsersSnap = await get(ref(database, 'users'));
-            const allUsers = allUsersSnap.val() || {};
-            for (let u in allUsers) { if (u !== currentUser && allUsers[u].usernameTag === newUsernameTag) { alert(`Юзернейм @${newUsernameTag} занят!`); return; } }
-
-            // ОБЫЧНОЕ СОХРАНЕНИЕ ПРОФИЛЯ
-            await update(ref(database, `users/${currentUser}`), { usernameTag: newUsernameTag, bio: newBio, avatar: newAvatar });
-            
-            // ВРЕМЕННО: Сохраняем и свой ID через общую админскую функцию
-            if (newIdStr !== (currentUserId === null ? '' : currentUserId.toString())) {
-                 await adminForceSaveUserId(currentUser, newIdStr);
-            } else {
-                 alert("Профиль успешно сохранён!");
+            if (!newUsernameTag) {
+                alert("Юзернейм не может быть пустым!");
+                return;
             }
 
-            document.getElementById('sidebarDrawer').classList.remove('active'); document.getElementById('drawerOverlay').classList.remove('active');
+            // Проверка уникальности юзернейма в базе
+            const allUsersSnap = await get(ref(database, 'users'));
+            const allUsers = allUsersSnap.val() || {};
+
+            for (let u in allUsers) {
+                if (u !== currentUser && allUsers[u].usernameTag === newUsernameTag) {
+                    alert(`Юзернейм @${newUsernameTag} уже занят другим пользователем!`);
+                    return;
+                }
+            }
+
+            await update(ref(database, `users/${currentUser}`), {
+                usernameTag: newUsernameTag,
+                bio: newBio,
+                avatar: newAvatar
+            });
+
+            currentUsernameTag = newUsernameTag;
+            currentBio = newBio;
+            currentAvatar = newAvatar;
+
+            alert("Профиль успешно сохранён!");
+            document.getElementById('sidebarDrawer').classList.remove('active');
+            document.getElementById('drawerOverlay').classList.remove('active');
         });
 
-        // --- СТИКЕРЫ (БЕЗ ИЗМЕНЕНИЙ) ---
-        document.getElementById('toggleStickersBtn').addEventListener('click', () => { stickersPanel.classList.toggle('active'); });
-        document.getElementById('tabGeneralStickers').addEventListener('click', (e) => { document.querySelectorAll('.sticker-tab-btn').forEach(b => b.classList.remove('active')); e.target.classList.add('active'); packCreateArea.style.display = 'none'; loadStickers('general'); });
-        document.getElementById('tabMyPackStickers').addEventListener('click', (e) => { document.querySelectorAll('.sticker-tab-btn').forEach(b => b.classList.remove('active')); e.target.classList.add('active'); packCreateArea.style.display = 'flex'; loadStickers('my'); });
-        document.getElementById('stickerFileInput').addEventListener('change', async (e) => {
-            const file = e.target.files[0]; const pName = document.getElementById('packNameInput').value.trim() || 'Мой пак';
-            if (file) { const sText = await convertFileToBase64(file, 200, 200); push(ref(database, `sticker_packs/${currentUser}/${pName}`), sText); loadStickers('my'); }
+        // --- ПАНЕЛЬ СТИКЕРОВ ---
+        const stickersPanel = document.getElementById('stickersPanel');
+        const stickersGrid = document.getElementById('stickersGrid');
+        const packCreateArea = document.getElementById('packCreateArea');
+
+        document.getElementById('toggleStickersBtn').addEventListener('click', () => {
+            stickersPanel.classList.toggle('active');
         });
+
+        document.getElementById('tabGeneralStickers').addEventListener('click', (e) => {
+            document.querySelectorAll('.sticker-tab-btn').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            packCreateArea.style.display = 'none';
+            loadStickers('general');
+        });
+
+        document.getElementById('tabMyPackStickers').addEventListener('click', (e) => {
+            document.querySelectorAll('.sticker-tab-btn').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            packCreateArea.style.display = 'flex';
+            loadStickers('my');
+        });
+
+        document.getElementById('stickerFileInput').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            const packName = document.getElementById('packNameInput').value.trim() || 'Мой пак';
+
+            if (file) {
+                const stickerText = await convertFileToBase64(file, 200, 200);
+                push(ref(database, `sticker_packs/${currentUser}/${packName}`), stickerText);
+                loadStickers('my');
+            }
+        });
+
         function loadStickers(type) {
             stickersGrid.innerHTML = '';
-            let path = (type === 'general') ? 'sticker_packs/general' : `sticker_packs/${currentUser}`;
-            onValue(ref(database, path), (snap) => {
-                const data = snap.val() || {}; stickersGrid.innerHTML = '';
-                if (type === 'general') { Object.values(data).forEach(url => { const img = document.createElement('img'); img.className = 'sticker-item'; img.src = url; img.addEventListener('click', () => sendSticker(url)); stickersGrid.appendChild(img); }); } 
-                else { Object.keys(data).forEach(p => { Object.values(data[p]).forEach(url => { const img = document.createElement('img'); img.className = 'sticker-item'; img.src = url; img.addEventListener('click', () => sendSticker(url)); stickersGrid.appendChild(img); }); }); }
-            });
+
+            if (type === 'general') {
+                onValue(ref(database, 'sticker_packs/general'), (snap) => {
+                    const data = snap.val() || {};
+                    stickersGrid.innerHTML = '';
+                    Object.values(data).forEach(url => {
+                        const img = document.createElement('img');
+                        img.className = 'sticker-item';
+                        img.src = url;
+                        img.addEventListener('click', () => sendSticker(url));
+                        stickersGrid.appendChild(img);
+                    });
+                });
+            } else {
+                onValue(ref(database, `sticker_packs/${currentUser}`), (snap) => {
+                    const packs = snap.val() || {};
+                    stickersGrid.innerHTML = '';
+                    Object.keys(packs).forEach(packName => {
+                        const items = packs[packName];
+                        Object.values(items).forEach(url => {
+                            const img = document.createElement('img');
+                            img.className = 'sticker-item';
+                            img.src = url;
+                            img.addEventListener('click', () => sendSticker(url));
+                            stickersGrid.appendChild(img);
+                        });
+                    });
+                });
+            }
         }
 
-        // --- МОДАЛКА ОНЛАЙН (БЕЗ ИЗМЕНЕНИЙ) ---
+        function sendSticker(stickerBase64) {
+            sendDirectMessage('', stickerBase64);
+            stickersPanel.classList.remove('active');
+        }
+
+        // МОДАЛКА ОНЛАЙН ИГРОКОВ
+        const onlineModalOverlay = document.getElementById('onlineModalOverlay');
+        const onlineModalList = document.getElementById('onlineModalList');
+
         document.getElementById('chatWindowHeader').addEventListener('click', (e) => {
-            if (e.target.classList.contains('back-btn')) return; onlineModalList.innerHTML = '';
+            if (e.target.classList.contains('back-btn')) return;
+
+            onlineModalList.innerHTML = '';
             onValue(ref(database, 'status'), (snap) => {
-                const statuses = snap.val() || {}; let count = 0;
+                const statuses = snap.val() || {};
+                let count = 0;
+
                 Object.keys(statuses).forEach(user => {
                     if (statuses[user].state === 'online') {
-                        count++; const uAv = allUsersData[user]?.avatar || '🐱';
-                        const item = document.createElement('div'); item.style.cssText = "display:flex; align-items:center; gap:10px; padding:6px; border-bottom:1px solid var(--border-color); cursor:pointer;";
-                        const avC = document.createElement('div'); avC.className = "msg-avatar"; renderAvatar(avC, uAv);
-                        const nameE = document.createElement('div'); nameE.style.fontWeight = 'bold'; nameE.innerText = user + (user === currentUser ? ' (Вы)' : '');
-                        item.appendChild(avC); item.appendChild(nameE); item.addEventListener('click', () => { document.getElementById('onlineModalOverlay').classList.remove('active'); openUserProfileModal(user); });
+                        count++;
+                        const userAvatar = allUsersData[user] ? allUsersData[user].avatar : '🐱';
+
+                        const item = document.createElement('div');
+                        item.style.cssText = "display:flex; align-items:center; gap:10px; padding:6px; border-bottom:1px solid var(--border-color); cursor:pointer;";
+                        
+                        const avContainer = document.createElement('div');
+                        avContainer.className = "msg-avatar";
+                        renderAvatar(avContainer, userAvatar);
+
+                        const nameEl = document.createElement('div');
+                        nameEl.style.fontWeight = 'bold';
+                        nameEl.innerText = user + (user === currentUser ? ' (Вы)' : '');
+
+                        item.appendChild(avContainer);
+                        item.appendChild(nameEl);
+
+                        item.addEventListener('click', () => {
+                            onlineModalOverlay.classList.remove('active');
+                            openUserProfileModal(user);
+                        });
+
                         onlineModalList.appendChild(item);
                     }
                 });
-                if (count === 0) onlineModalList.innerText = 'Никого нет в сети'; document.getElementById('onlineModalOverlay').classList.add('active');
+
+                if (count === 0) {
+                    onlineModalList.innerText = 'Никого нет в сети';
+                }
+                onlineModalOverlay.classList.add('active');
             }, { onlyOnce: true });
         });
-        document.getElementById('closeOnlineModalBtn').addEventListener('click', () => { document.getElementById('onlineModalOverlay').classList.remove('active'); });
 
-        // --- ОСТАЛЬНОЕ (БЕЗ ИЗМЕНЕНИЙ) ---
-        function attachLongPressMenu(el, data) {
-            let timer = null; const start = (e) => { if (e.button && e.button !== 0) return; timer = setTimeout(() => openContextMenu(el, data), 500); };
-            const stop = () => clearTimeout(timer);
-            el.addEventListener('touchstart', start, { passive: true }); el.addEventListener('touchend', stop); el.addEventListener('touchmove', stop);
-            el.addEventListener('mousedown', start); el.addEventListener('mouseup', stop); el.addEventListener('mouseleave', stop);
-            el.addEventListener('contextmenu', (e) => { e.preventDefault(); openContextMenu(el, data); });
+        document.getElementById('closeOnlineModalBtn').addEventListener('click', () => {
+            onlineModalOverlay.classList.remove('active');
+        });
+
+        function attachLongPressMenu(element, msgData) {
+            let pressTimer = null;
+
+            const startPress = (e) => {
+                if (e.button && e.button !== 0) return;
+                pressTimer = setTimeout(() => {
+                    openContextMenu(element, msgData);
+                }, 500);
+            };
+
+            const cancelPress = () => {
+                clearTimeout(pressTimer);
+            };
+
+            element.addEventListener('touchstart', startPress, { passive: true });
+            element.addEventListener('touchend', cancelPress);
+            element.addEventListener('touchmove', cancelPress);
+
+            element.addEventListener('mousedown', startPress);
+            element.addEventListener('mouseup', cancelPress);
+            element.addEventListener('mouseleave', cancelPress);
+
+            element.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                openContextMenu(element, msgData);
+            });
         }
-        function openContextMenu(el, data) {
-            document.querySelectorAll('.message-row').forEach(e => e.classList.remove('msg-selected')); el.classList.add('msg-selected');
-            selectedMsgData = data; document.getElementById('replyBarAuthor').innerText = data.author; document.getElementById('replyBarText').innerText = data.sticker ? '🖼️ Стикер' : (data.text || 'Игра');
-            document.getElementById('repeatGameBtn').style.display = (data.text === '🎰' || data.text === '⚽') ? 'block' : 'none';
-            document.getElementById('editMsgBtn').style.display = (data.author === currentUser && !data.sticker && data.text !== '🎰' && data.text !== '⚽') ? 'block' : 'none';
-            document.getElementById('deleteMsgBtn').style.display = (data.author === currentUser) ? 'block' : 'none'; replyBar.classList.add('active');
+
+        function openContextMenu(element, msgData) {
+            document.querySelectorAll('.message-row').forEach(el => el.classList.remove('msg-selected'));
+            element.classList.add('msg-selected');
+
+            selectedMsgData = msgData;
+
+            document.getElementById('replyBarAuthor').innerText = msgData.author;
+            document.getElementById('replyBarText').innerText = msgData.sticker ? '🖼️ Стикер' : (msgData.text || 'Игра');
+
+            repeatGameBtn.style.display = (msgData.text === '🎰' || msgData.text === '⚽') ? 'block' : 'none';
+            editMsgBtn.style.display = (msgData.author === currentUser && msgData.text !== '🎰' && msgData.text !== '⚽' && !msgData.sticker) ? 'block' : 'none';
+            deleteMsgBtn.style.display = (msgData.author === currentUser) ? 'block' : 'none';
+
+            replyBar.classList.add('active');
         }
-        document.getElementById('deleteMsgBtn').addEventListener('click', () => {
-            if (selectedMsgData?.msgId) {
-                let path = (activeChatId === 'global') ? 'global_chat' : 'private_chats/' + [currentUser, activeChatId].sort().join('_');
-                remove(ref(database, `${path}/${selectedMsgData.msgId}`)); cancelReply();
+
+        deleteMsgBtn.addEventListener('click', () => {
+            if (selectedMsgData && selectedMsgData.msgId) {
+                let chatDbPath = 'global_chat';
+                if (activeChatId !== 'global') {
+                    const pair = [currentUser, activeChatId].sort().join('_');
+                    chatDbPath = 'private_chats/' + pair;
+                }
+                remove(ref(database, `${chatDbPath}/${selectedMsgData.msgId}`));
+                cancelReply();
             }
         });
-        document.getElementById('editMsgBtn').addEventListener('click', () => {
-            if (selectedMsgData?.msgId) { editingMsgId = selectedMsgData.msgId; userInput.value = selectedMsgData.text; userInput.focus(); document.getElementById('sendBtn').innerText = '✓'; }
+
+        editMsgBtn.addEventListener('click', () => {
+            if (selectedMsgData && selectedMsgData.msgId) {
+                editingMsgId = selectedMsgData.msgId;
+                userInput.value = selectedMsgData.text;
+                userInput.focus();
+                document.getElementById('sendBtn').innerText = '✓';
+            }
         });
-        function scrollToMessage(id) {
-            const el = document.getElementById(`msg-${id}`);
-            if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.classList.remove('highlight-msg'); void el.offsetWidth; el.classList.add('highlight-msg'); setTimeout(() => el.classList.remove('highlight-msg'), 2000); }
+
+        function scrollToMessage(targetMsgId) {
+            const targetEl = document.getElementById(`msg-${targetMsgId}`);
+            if (targetEl) {
+                targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                targetEl.classList.remove('highlight-msg');
+                void targetEl.offsetWidth;
+                targetEl.classList.add('highlight-msg');
+                setTimeout(() => targetEl.classList.remove('highlight-msg'), 2000);
+            }
         }
-        function attachSwipeToReply(el, data) {
-            let sX = 0, cX = 0, active = false;
-            const start = (x) => { sX = x; active = true; };
-            const move = (x) => { if (!active) return; const diff = x - sX; if (diff < 0 && diff > -100) { cX = diff; el.style.transform = `translateX(${cX}px)`; } };
-            const end = () => { if (!active) return; active = false; el.style.transform = 'translateX(0px)'; if (cX < -50) openContextMenu(el, data); cX = 0; };
-            el.addEventListener('touchstart', (e) => start(e.touches[0].clientX), { passive: true }); el.addEventListener('touchmove', (e) => move(e.touches[0].clientX), { passive: true }); el.addEventListener('touchend', end);
+
+        function handleCasinoLogic(id, finalResult, msgId, hasPlayed) {
+            const reelsEl = document.getElementById(id);
+            const statusEl = document.getElementById(id + '-status');
+            if (!reelsEl) return;
+            const symbols = ['🍋', '🍒', '7️⃣', '🍇'];
+
+            if (!finalResult) {
+                finalResult = [symbols[Math.floor(Math.random() * 4)], symbols[Math.floor(Math.random() * 4)], symbols[Math.floor(Math.random() * 4)]];
+            }
+
+            const updateStatus = (res) => {
+                if (res[0] === '7️⃣' && res[1] === '7️⃣' && res[2] === '7️⃣') statusEl.innerText = "💥 ДЖЕКПОТ! 777 💥";
+                else if (res[0] === res[1] && res[1] === res[2]) statusEl.innerText = "🎉 ВЫИГРЫШ!";
+                else statusEl.innerText = "❌ Не повезло!";
+            };
+
+            if (hasPlayed) {
+                reelsEl.innerText = `${finalResult[0]} ${finalResult[1]} ${finalResult[2]}`;
+                updateStatus(finalResult);
+                return;
+            }
+
+            statusEl.innerText = "Крутим...";
+            let ticks = 0;
+            const interval = setInterval(() => {
+                reelsEl.innerText = `${symbols[Math.floor(Math.random()*4)]} ${symbols[Math.floor(Math.random()*4)]} ${symbols[Math.floor(Math.random()*4)]}`;
+                ticks++;
+                if (ticks > 15) {
+                    clearInterval(interval);
+                    reelsEl.innerText = `${finalResult[0]} ${finalResult[1]} ${finalResult[2]}`;
+                    updateStatus(finalResult);
+                    savePlayedGame(msgId);
+                }
+            }, 80);
         }
+
+        function handleFootballLogic(id, finalResult, msgId, hasPlayed) {
+            const displayEl = document.getElementById(id);
+            const statusEl = document.getElementById(id + '-status');
+            if (!displayEl) return;
+
+            if (!finalResult) finalResult = { isGoal: Math.random() > 0.5 };
+
+            const updateStatus = (isGoal) => statusEl.innerText = isGoal ? "🎯 ГОЛ!!!" : "❌ СЕЙВ ВРАТАРЯ!";
+
+            if (hasPlayed) {
+                displayEl.innerText = finalResult.isGoal ? "🥅 ⚽ 🧤" : "🥅 🧤⚽";
+                updateStatus(finalResult.isGoal);
+                return;
+            }
+
+            statusEl.innerText = "Удар...";
+            let frames = ["🥅 ⚽  🧤", "🥅  ⚽ 🧤", "🥅   ⚽🧤"];
+            let step = 0;
+            const interval = setInterval(() => {
+                displayEl.innerText = frames[step % frames.length];
+                step++;
+                if (step > 10) {
+                    clearInterval(interval);
+                    displayEl.innerText = finalResult.isGoal ? "🥅 ⚽ 🧤" : "🥅 🧤⚽";
+                    updateStatus(finalResult.isGoal);
+                    savePlayedGame(msgId);
+                }
+            }, 120);
+        }
+
+        function savePlayedGame(msgId) {
+            if (!playedGames.includes(msgId)) {
+                playedGames.push(msgId);
+                update(ref(database, `users/${currentUser}`), { playedGames: playedGames });
+            }
+        }
+
+        repeatGameBtn.addEventListener('click', () => {
+            if (selectedMsgData && (selectedMsgData.text === '🎰' || selectedMsgData.text === '⚽')) {
+                sendDirectMessage(selectedMsgData.text);
+                cancelReply();
+            }
+        });
+
+        function attachSwipeToReply(rowElement, msgData) {
+            let startX = 0, currentX = 0, isSwiping = false;
+
+            const startSwipe = (x) => { startX = x; isSwiping = true; };
+            const moveSwipe = (x) => {
+                if (!isSwiping) return;
+                const diffX = x - startX;
+                if (diffX < 0 && diffX > -100) {
+                    currentX = diffX;
+                    rowElement.style.transform = `translateX(${currentX}px)`;
+                }
+            };
+            const endSwipe = () => {
+                if (!isSwiping) return;
+                isSwiping = false;
+                rowElement.style.transform = `translateX(0px)`;
+                if (currentX < -50) openContextMenu(rowElement, msgData);
+                currentX = 0;
+            };
+
+            rowElement.addEventListener('touchstart', (e) => startSwipe(e.touches[0].clientX), { passive: true });
+            rowElement.addEventListener('touchmove', (e) => moveSwipe(e.touches[0].clientX), { passive: true });
+            rowElement.addEventListener('touchend', endSwipe);
+        }
+
         function cancelReply() {
-            selectedMsgData = null; editingMsgId = null; document.getElementById('repeatGameBtn').style.display = 'none';
-            document.getElementById('editMsgBtn').style.display = 'none'; document.getElementById('deleteMsgBtn').style.display = 'none';
-            replyBar.classList.remove('active'); document.querySelectorAll('.message-row').forEach(e => e.classList.remove('msg-selected'));
+            selectedMsgData = null;
+            editingMsgId = null;
+            repeatGameBtn.style.display = 'none';
+            editMsgBtn.style.display = 'none';
+            deleteMsgBtn.style.display = 'none';
+            replyBar.classList.remove('active');
+            document.querySelectorAll('.message-row').forEach(el => el.classList.remove('msg-selected'));
             document.getElementById('sendBtn').innerText = '➤';
         }
+
         document.getElementById('cancelReplyBtn').addEventListener('click', cancelReply);
+
         function sendDirectMessage(text, stickerData = null) {
             if ((!text && !stickerData) || !currentUser) return;
-            let path = (activeChatId === 'global') ? 'global_chat' : 'private_chats/' + [currentUser, activeChatId].sort().join('_');
-            if (editingMsgId) { update(ref(database, `${path}/${editingMsgId}`), { text: text, isEdited: true }); cancelReply(); return; }
-            const msg = { author: currentUser, avatar: currentAvatar, text: text, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
-            if (stickerData) msg.sticker = stickerData;
-            if (text === '🎰') msg.gameResult = [['🍋','🍒','7️⃣','🍇'][Math.floor(Math.random()*4)],['🍋','🍒','7️⃣','🍇'][Math.floor(Math.random()*4)],['🍋','🍒','7️⃣','🍇'][Math.floor(Math.random()*4)]];
-            if (text === '⚽') msg.gameResult = { isGoal: Math.random() > 0.5 };
-            if (selectedMsgData) msg.replyTo = { author: selectedMsgData.author, text: selectedMsgData.sticker ? '🖼️ Стикер' : (selectedMsgData.text || 'Игра'), msgId: selectedMsgData.msgId };
-            push(ref(database, path), msg); set(ref(database, `typing/${activeChatId}/${currentUser}`), false);
+
+            let chatDbPath = 'global_chat';
+            if (activeChatId !== 'global') {
+                const pair = [currentUser, activeChatId].sort().join('_');
+                chatDbPath = 'private_chats/' + pair;
+            }
+
+            if (editingMsgId) {
+                update(ref(database, `${chatDbPath}/${editingMsgId}`), {
+                    text: text,
+                    isEdited: true
+                });
+                cancelReply();
+                return;
+            }
+
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const msgObject = {
+                author: currentUser,
+                avatar: currentAvatar,
+                text: text,
+                time: time
+            };
+
+            if (stickerData) {
+                msgObject.sticker = stickerData;
+            }
+
+            if (text === '🎰') {
+                const symbols = ['🍋', '🍒', '7️⃣', '🍇'];
+                msgObject.gameResult = [symbols[Math.floor(Math.random() * 4)], symbols[Math.floor(Math.random() * 4)], symbols[Math.floor(Math.random() * 4)]];
+            } else if (text === '⚽') {
+                msgObject.gameResult = { isGoal: Math.random() > 0.5 };
+            }
+
+            if (selectedMsgData) {
+                msgObject.replyTo = {
+                    author: selectedMsgData.author,
+                    text: selectedMsgData.sticker ? '🖼️ Стикер' : (selectedMsgData.text || 'Игра'),
+                    msgId: selectedMsgData.msgId || null
+                };
+            }
+
+            push(ref(database, chatDbPath), msgObject);
+            set(ref(database, `typing/${activeChatId}/${currentUser}`), false);
         }
-        document.getElementById('chatForm').addEventListener('submit', (e) => { e.preventDefault(); const t = userInput.value.trim(); if (t) { sendDirectMessage(t); userInput.value = ''; cancelReply(); } });
-        document.getElementById('globalChatItem').addEventListener('click', () => { document.querySelectorAll('.chat-item').forEach(e => e.classList.remove('active')); document.getElementById('globalChatItem').classList.add('active'); openChat('global', 'Общий чат страны', '📢'); });
+
+        document.getElementById('chatForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const text = userInput.value.trim();
+            if (text) {
+                sendDirectMessage(text);
+                userInput.value = '';
+                cancelReply();
+            }
+        });
+
+        document.getElementById('globalChatItem').addEventListener('click', () => {
+            document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('globalChatItem').classList.add('active');
+            openChat('global', 'Общий чат страны', '📢');
+        });
+
         document.getElementById('backBtn').addEventListener('click', () => messenger.classList.remove('open-chat'));
-        document.getElementById('openMenuBtn').addEventListener('click', () => { drawer.classList.add('active'); overlay.classList.add('active'); });
-        overlay.addEventListener('click', () => { drawer.classList.remove('active'); overlay.classList.remove('active'); });
+
+        const drawer = document.getElementById('sidebarDrawer');
+        const overlay = document.getElementById('drawerOverlay');
+
+        document.getElementById('openMenuBtn').addEventListener('click', () => {
+            drawer.classList.add('active');
+            overlay.classList.add('active');
+            document.getElementById('setAvatarInput').value = currentAvatar;
+            document.getElementById('setUsernameInput').value = currentUsernameTag;
+            document.getElementById('setBioInput').value = currentBio;
+        });
+
+        overlay.addEventListener('click', () => {
+            drawer.classList.remove('active');
+            overlay.classList.remove('active');
+        });
+
         document.getElementById('logoutBtn').addEventListener('click', async () => {
-            if (currentUser) await set(ref(database, 'status/' + currentUser), { state: 'offline', last_changed: Date.now() });
-            localStorage.clear(); location.reload();
+            if (currentUser) {
+                await set(ref(database, 'status/' + currentUser), { state: 'offline', last_changed: Date.now() });
+            }
+            localStorage.clear();
+            location.reload();
         });
 
         if (currentUser) {
             get(ref(database, `users/${currentUser}`)).then((userSnap) => {
-                const d = userSnap.val() || {}; currentUserId = d.id || null;
-                currentUsernameTag = d.usernameTag || `user_tbd`; currentAvatar = d.avatar || '🐱'; currentBio = d.bio || '';
-                applyVisualSettings(d.settings?.theme, d.settings?.font); initApp();
+                const userData = userSnap.val() || {};
+                currentUserId = userData.id;
+                currentUsernameTag = userData.usernameTag || `user_${userData.id}`;
+                currentAvatar = userData.avatar || '🐱';
+                currentBio = userData.bio || '';
+                const settings = userData.settings || {};
+                applyVisualSettings(settings.theme, settings.font);
+                initApp();
             });
         }
     </script>
