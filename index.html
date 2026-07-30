@@ -115,6 +115,7 @@
             padding: 20px;
             gap: 12px;
             overflow-y: auto;
+            touch-action: pan-y;
         }
 
         .sidebar-drawer.active { left: 0; }
@@ -691,7 +692,10 @@
 
         <!-- ШТОРКА НАСТРОЕК -->
         <div class="sidebar-drawer" id="sidebarDrawer">
-            <h3>⚙️ Настройки профиля</h3>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3>⚙️ Настройки профиля</h3>
+                <button class="close-reply-btn" id="closeDrawerBtn" style="font-size:1.2rem;">✕</button>
+            </div>
             
             <div style="text-align: center; margin: 5px 0;">
                 <div id="drawerAvatar" class="chat-item-avatar" style="width:75px; height:75px; margin:0 auto; font-size:2rem;">🐱</div>
@@ -965,7 +969,6 @@
             }
         });
 
-        // Генерация ультимативного порядкового ID (начиная с 1)
         async function getNextUserId() {
             const countRef = ref(database, 'users_count');
             const result = await runTransaction(countRef, (currentCount) => {
@@ -995,7 +998,6 @@
             }
 
             currentUserId = userData.id;
-            // Имя тега по умолчанию: user_[id]
             currentUsernameTag = userData.usernameTag || `user_${currentUserId}`;
             currentAvatar = inputAvatar || userData.avatar || '🐱';
             currentBio = userData.bio || '';
@@ -1254,7 +1256,6 @@
             avatarDiv.className = 'msg-avatar';
             renderAvatar(avatarDiv, data.avatar);
             
-            // Нажатие на аватар -> Открыть профиль
             avatarDiv.addEventListener('click', (e) => {
                 e.stopPropagation();
                 openUserProfileModal(data.author);
@@ -1308,7 +1309,6 @@
             row.appendChild(avatarDiv);
             row.appendChild(bubble);
 
-            // Нажатие на Имя автора -> Открыть профиль
             const authorEl = bubble.querySelector(`#author-${msgId}`);
             if (authorEl) {
                 authorEl.addEventListener('click', (e) => {
@@ -1332,7 +1332,6 @@
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        // --- МОДАЛЬНОЕ ОКНО ПРОФИЛЯ ПОЛЬЗОВАТЕЛЯ ---
         const profileModalOverlay = document.getElementById('profileModalOverlay');
 
         async function openUserProfileModal(username) {
@@ -1379,7 +1378,6 @@
             }
         });
 
-        // --- СОХРАНЕНИЕ ПРОФИЛЯ В НАСТРОЙКАХ ---
         document.getElementById('saveProfileBtn').addEventListener('click', async () => {
             let newUsernameTag = document.getElementById('setUsernameInput').value.trim().replace(/^@/, '');
             const newBio = document.getElementById('setBioInput').value.trim();
@@ -1389,7 +1387,6 @@
                 newUsernameTag = `user_${currentUserId}`;
             }
 
-            // Проверка уникальности юзернейма в базе
             const allUsersSnap = await get(ref(database, 'users'));
             const allUsers = allUsersSnap.val() || {};
 
@@ -1411,11 +1408,9 @@
             currentAvatar = newAvatar;
 
             alert("Профиль успешно сохранён!");
-            document.getElementById('sidebarDrawer').classList.remove('active');
-            document.getElementById('drawerOverlay').classList.remove('active');
+            closeDrawer();
         });
 
-        // --- ПАНЕЛЬ СТИКЕРОВ ---
         const stickersPanel = document.getElementById('stickersPanel');
         const stickersGrid = document.getElementById('stickersGrid');
         const packCreateArea = document.getElementById('packCreateArea');
@@ -1487,7 +1482,6 @@
             stickersPanel.classList.remove('active');
         }
 
-        // МОДАЛКА ОНЛАЙН ИГРОКОВ
         const onlineModalOverlay = document.getElementById('onlineModalOverlay');
         const onlineModalList = document.getElementById('onlineModalList');
 
@@ -1802,6 +1796,11 @@
         const drawer = document.getElementById('sidebarDrawer');
         const overlay = document.getElementById('drawerOverlay');
 
+        function closeDrawer() {
+            drawer.classList.remove('active');
+            overlay.classList.remove('active');
+        }
+
         document.getElementById('openMenuBtn').addEventListener('click', () => {
             drawer.classList.add('active');
             overlay.classList.add('active');
@@ -1810,9 +1809,33 @@
             document.getElementById('setBioInput').value = currentBio;
         });
 
-        overlay.addEventListener('click', () => {
-            drawer.classList.remove('active');
-            overlay.classList.remove('active');
+        document.getElementById('closeDrawerBtn').addEventListener('click', closeDrawer);
+        overlay.addEventListener('click', closeDrawer);
+
+        // Клик внутри шторки закрывает её (кроме кликов по полям ввода)
+        drawer.addEventListener('click', (e) => {
+            const isInput = e.target.tagName === 'INPUT' || 
+                            e.target.tagName === 'TEXTAREA' || 
+                            e.target.tagName === 'SELECT' || 
+                            e.target.tagName === 'LABEL' ||
+                            e.target.closest('label');
+
+            if (!isInput) {
+                closeDrawer();
+            }
+        });
+
+        // Свайп влево для закрытия шторки
+        let drawerStartX = 0;
+        drawer.addEventListener('touchstart', (e) => {
+            drawerStartX = e.touches[0].clientX;
+        }, { passive: true });
+
+        drawer.addEventListener('touchend', (e) => {
+            const diffX = e.changedTouches[0].clientX - drawerStartX;
+            if (diffX < -40) {
+                closeDrawer();
+            }
         });
 
         document.getElementById('logoutBtn').addEventListener('click', async () => {
