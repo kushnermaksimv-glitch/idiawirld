@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мессенджер «Мир Идиаканта»</title>
+    <title>Idiagram</title>
     <style>
         :root {
             --bg-body: #2c1d11;
@@ -260,7 +260,7 @@
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
             overflow-x: hidden;
         }
 
@@ -325,6 +325,56 @@
             background-color: var(--bg-msg-my);
             color: var(--text-my);
         }
+
+        /* --- ЭФФЕКТЫ И ПОДСВЕТКА СООБЩЕНИЙ --- */
+
+        .fx-decor {
+            position: absolute;
+            font-size: 1rem;
+            pointer-events: none;
+            animation: floatFx 3s infinite ease-in-out;
+            z-index: 5;
+        }
+
+        @keyframes floatFx {
+            0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.8; }
+            50% { transform: translateY(-6px) rotate(15deg); opacity: 1; }
+        }
+
+        /* 1. ДЕНЬ РОЖДЕНИЯ (С ДР) */
+        .msg-fx-birthday .msg-bubble {
+            box-shadow: 0 0 15px #ff4081, 0 0 5px #ffd700;
+            border: 2px solid #ff4081 !important;
+            animation: bdPulse 2s infinite alternate;
+        }
+        @keyframes bdPulse {
+            0% { box-shadow: 0 0 10px #ff4081; }
+            100% { box-shadow: 0 0 20px #ffd700; }
+        }
+
+        /* 2. НОВЫЙ ГОД (С НГ) */
+        .msg-fx-ny .msg-bubble {
+            box-shadow: 0 0 15px #00e5ff, 0 0 8px #29b6f6;
+            border: 2px solid #00e5ff !important;
+            animation: nyGlow 2.5s infinite alternate;
+        }
+        @keyframes nyGlow {
+            0% { box-shadow: 0 0 8px #00e5ff; }
+            100% { box-shadow: 0 0 22px #80d8ff; }
+        }
+
+        /* 3. ВОПРОСЫ (?) */
+        .msg-fx-question .msg-bubble {
+            box-shadow: 0 0 12px #b388ff;
+            border: 2px dashed #b388ff !important;
+        }
+
+        /* 4. ПРАЗДНИКИ И РОЖКИ */
+        .msg-fx-party .msg-bubble {
+            box-shadow: 0 0 14px #ff9100;
+            border: 2px solid #ff9100 !important;
+        }
+
 
         .msg-author { 
             font-size: 0.75rem; 
@@ -750,7 +800,7 @@
 
         <!-- ЭКРАН ВХОДА -->
         <div class="auth-screen" id="authScreen">
-            <h2>🐾 Мир Идиаканта</h2>
+            <h2>📱 Idiagram</h2>
             <input type="text" id="authUsername" class="auth-input" placeholder="Логин (Никнейм)">
             
             <div style="width:100%; max-width:280px; text-align:center;">
@@ -762,13 +812,13 @@
                 </label>
             </div>
 
-            <button class="auth-btn" id="startBtn">Войти в Мессенджер</button>
+            <button class="auth-btn" id="startBtn">Войти в Idiagram</button>
         </div>
 
         <div class="chats-list-panel">
             <div class="chats-header">
                 <button class="menu-btn" id="openMenuBtn">☰</button>
-                <h3>Идиакант TG</h3>
+                <h3>Idiagram</h3>
             </div>
             
             <div id="chatsList" style="overflow-y: auto; flex:1;">
@@ -776,7 +826,7 @@
                     <div class="chat-item-avatar">📢</div>
                     <div class="chat-item-info">
                         <div class="chat-item-title">Общий чат страны</div>
-                        <div class="chat-item-sub" id="globalTypingSub">Все жители Идиаканта</div>
+                        <div class="chat-item-sub" id="globalTypingSub">Все пользователи Idiagram</div>
                     </div>
                 </div>
             </div>
@@ -1152,7 +1202,7 @@
                         sub.innerText = `✍️ ${activeTypers.join(', ')} печатает...`;
                         sub.style.color = '#ffd700';
                     } else {
-                        sub.innerText = 'Все жители Идиаканта';
+                        sub.innerText = 'Все пользователи Idiagram';
                         sub.style.color = 'inherit';
                     }
                 }
@@ -1264,6 +1314,43 @@
             const bubble = document.createElement('div');
             bubble.className = 'msg-bubble';
 
+            // --- АНАЛИЗ ТЕКСТА И ЭФФЕКТЫ ---
+            const lowerText = (data.text || '').toLowerCase();
+            let fxClass = '';
+            let fxElements = '';
+
+            if (lowerText.includes('с др') || lowerText.includes('днем рождения') || lowerText.includes('днём рождения')) {
+                fxClass = 'msg-fx-birthday';
+                fxElements = `
+                    <span class="fx-decor" style="top:-12px; left:-12px;">🎈</span>
+                    <span class="fx-decor" style="bottom:-10px; right:-10px; animation-delay:1s;">🎉</span>
+                    <span class="fx-decor" style="top:-14px; right:15px; animation-delay:0.5s;">🎂</span>
+                `;
+            } else if (lowerText.includes('с нг') || lowerText.includes('новым годом') || lowerText.includes('новый год')) {
+                fxClass = 'msg-fx-ny';
+                fxElements = `
+                    <span class="fx-decor" style="top:-14px; left:-10px;">🎄</span>
+                    <span class="fx-decor" style="bottom:-10px; right:-8px; animation-delay:1.2s;">❄️</span>
+                    <span class="fx-decor" style="top:-12px; right:20px; animation-delay:0.6s;">✨</span>
+                `;
+            } else if (lowerText.includes('?') || lowerText.includes('почему') || lowerText.includes('зачем') || lowerText.includes('как')) {
+                fxClass = 'msg-fx-question';
+                fxElements = `
+                    <span class="fx-decor" style="top:-12px; left:-10px;">❓</span>
+                    <span class="fx-decor" style="bottom:-8px; right:-10px; animation-delay:0.8s;">❔</span>
+                `;
+            } else if (lowerText.includes('праздник') || lowerText.includes('поздравл')) {
+                fxClass = 'msg-fx-party';
+                fxElements = `
+                    <span class="fx-decor" style="top:-14px; left:-10px;">🥳</span>
+                    <span class="fx-decor" style="bottom:-10px; right:-10px; animation-delay:1s;">🎉</span>
+                `;
+            }
+
+            if (fxClass) {
+                row.classList.add(fxClass);
+            }
+
             let replyHTML = '';
             if (data.replyTo) {
                 replyHTML = `
@@ -1299,6 +1386,7 @@
             }
 
             bubble.innerHTML = `
+                ${fxElements}
                 <div class="msg-author" id="author-${msgId}">${data.author}</div>
                 ${replyHTML}
                 ${mainContent}
@@ -1812,7 +1900,6 @@
         document.getElementById('closeDrawerBtn').addEventListener('click', closeDrawer);
         overlay.addEventListener('click', closeDrawer);
 
-        // Клик внутри шторки закрывает её (кроме кликов по полям ввода)
         drawer.addEventListener('click', (e) => {
             const isInput = e.target.tagName === 'INPUT' || 
                             e.target.tagName === 'TEXTAREA' || 
@@ -1825,7 +1912,6 @@
             }
         });
 
-        // Свайп влево для закрытия шторки
         let drawerStartX = 0;
         drawer.addEventListener('touchstart', (e) => {
             drawerStartX = e.touches[0].clientX;
