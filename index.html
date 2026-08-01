@@ -130,6 +130,33 @@
 
         .drawer-overlay.active { display: block; }
 
+        /* Стилевое оформление списка меню в боковой шторке */
+        .drawer-menu-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .drawer-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            background: var(--bg-window);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .drawer-menu-item:hover {
+            background: var(--bg-chat-active);
+        }
+        .drawer-menu-item:active {
+            transform: scale(0.98);
+        }
+
         .setting-group {
             display: flex;
             flex-direction: column;
@@ -327,7 +354,6 @@
         }
 
         /* --- ЭФФЕКТЫ И ПОДСВЕТКА СООБЩЕНИЙ --- */
-
         .fx-decor {
             position: absolute;
             font-size: 1rem;
@@ -341,7 +367,6 @@
             50% { transform: translateY(-6px) rotate(15deg); opacity: 1; }
         }
 
-        /* 1. ДЕНЬ РОЖДЕНИЯ (С ДР) */
         .msg-fx-birthday .msg-bubble {
             box-shadow: 0 0 15px #ff4081, 0 0 5px #ffd700;
             border: 2px solid #ff4081 !important;
@@ -352,7 +377,6 @@
             100% { box-shadow: 0 0 20px #ffd700; }
         }
 
-        /* 2. НОВЫЙ ГОД (С НГ) */
         .msg-fx-ny .msg-bubble {
             box-shadow: 0 0 15px #00e5ff, 0 0 8px #29b6f6;
             border: 2px solid #00e5ff !important;
@@ -363,18 +387,15 @@
             100% { box-shadow: 0 0 22px #80d8ff; }
         }
 
-        /* 3. ВОПРОСЫ (?) */
         .msg-fx-question .msg-bubble {
             box-shadow: 0 0 12px #b388ff;
             border: 2px dashed #b388ff !important;
         }
 
-        /* 4. ПРАЗДНИКИ И РОЖКИ */
         .msg-fx-party .msg-bubble {
             box-shadow: 0 0 14px #ff9100;
             border: 2px solid #ff9100 !important;
         }
-
 
         .msg-author { 
             font-size: 0.75rem; 
@@ -644,13 +665,58 @@
             border: 2px solid var(--border-color);
             border-radius: 16px;
             width: 90%;
-            max-width: 340px;
+            max-width: 360px;
             padding: 20px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.6);
             display: flex;
             flex-direction: column;
             gap: 12px;
             position: relative;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        /* СТИЛИ МЕНЮ НАСТРОЕК В МОДАЛКЕ */
+        .settings-menu-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .settings-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            background: var(--bg-window);
+            border: 1px solid var(--border-color);
+        }
+        .settings-item:hover {
+            background: var(--bg-chat-active);
+        }
+        .settings-item-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+        .settings-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            color: #fff;
+        }
+        .settings-item-extra {
+            font-size: 0.85rem;
+            color: #2ec4b6;
+            font-weight: bold;
         }
 
         /* КАРТОЧКА ПРОФИЛЯ */
@@ -708,6 +774,134 @@
     <div class="messenger-container" id="messenger">
         <div class="drawer-overlay" id="drawerOverlay"></div>
 
+        <!-- МОДАЛКА НАСТРОЕК (СТРАНИЦА НАСТРОЕК) -->
+        <div class="modal-overlay" id="settingsModalOverlay">
+            <div class="modal-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:8px;">
+                    <h3 style="font-size:1.1rem;">⚙️ Настройки</h3>
+                    <button class="close-reply-btn" id="closeSettingsModalBtn">✕</button>
+                </div>
+
+                <div class="settings-menu-list">
+                    <div class="settings-item" id="setAccountBtn">
+                        <div class="settings-item-left">
+                            <div class="settings-icon" style="background:#0088cc;">👤</div>
+                            <span>Аккаунт</span>
+                        </div>
+                    </div>
+
+                    <div class="settings-item" id="setChatBtn">
+                        <div class="settings-item-left">
+                            <div class="settings-icon" style="background:#ff9800;">💬</div>
+                            <span>Настройки чатов</span>
+                        </div>
+                    </div>
+
+                    <div class="settings-item" onclick="alert('Раздел «Конфиденциальность» находится в разработке')">
+                        <div class="settings-item-left">
+                            <div class="settings-icon" style="background:#4caf50;">🔑</div>
+                            <span>Конфиденциальность</span>
+                        </div>
+                    </div>
+
+                    <div class="settings-item" onclick="alert('Раздел «Уведомления» находится в разработке')">
+                        <div class="settings-item-left">
+                            <div class="settings-icon" style="background:#f44336;">🔔</div>
+                            <span>Уведомления</span>
+                        </div>
+                    </div>
+
+                    <div class="settings-item" onclick="alert('Раздел «Данные и память» находится в разработке')">
+                        <div class="settings-item-left">
+                            <div class="settings-icon" style="background:#2196f3;">💾</div>
+                            <span>Данные и память</span>
+                        </div>
+                    </div>
+
+                    <div class="settings-item" onclick="alert('Раздел «Папки с чатами» находится в разработке')">
+                        <div class="settings-item-left">
+                            <div class="settings-icon" style="background:#0288d1;">📁</div>
+                            <span>Папки с чатами</span>
+                        </div>
+                    </div>
+
+                    <div class="settings-item" onclick="alert('Устройства: Подключено текущее сеансовое устройство (1)')">
+                        <div class="settings-item-left">
+                            <div class="settings-icon" style="background:#00bcd4;">💻</div>
+                            <span>Устройства</span>
+                        </div>
+                        <span class="settings-item-extra">1</span>
+                    </div>
+
+                    <div class="settings-item" onclick="alert('Энергосбережение включено')">
+                        <div class="settings-item-left">
+                            <div class="settings-icon" style="background:#ff5722;">🔋</div>
+                            <span>Энергосбережение</span>
+                        </div>
+                    </div>
+
+                    <div class="settings-item" id="languageBtn">
+                        <div class="settings-item-left">
+                            <div class="settings-icon" style="background:#9c27b0;">🌐</div>
+                            <span>Язык</span>
+                        </div>
+                        <span class="settings-item-extra" id="currentLangTag">Русский</span>
+                    </div>
+                </div>
+
+                <!-- Подраздел: Настройки аккаунта -->
+                <div id="accountSubSection" style="display:none; flex-direction:column; gap:10px; border-top:1px solid var(--border-color); padding-top:10px;">
+                    <h4>👤 Мой аккаунт</h4>
+                    <div class="setting-group">
+                        <label style="font-size:0.8rem; font-weight:bold;">Юзернейм (@имя):</label>
+                        <input type="text" id="setUsernameInput" class="auth-input" placeholder="user_1">
+                    </div>
+
+                    <div class="setting-group">
+                        <label style="font-size:0.8rem; font-weight:bold;">Описание профиля (О себе):</label>
+                        <textarea id="setBioInput" class="auth-input" style="height:60px; resize:none;" placeholder="Расскажите о себе..."></textarea>
+                    </div>
+
+                    <div class="setting-group">
+                        <label style="font-size:0.8rem; font-weight:bold;">Аватар (Эмодзи или Фото):</label>
+                        <input type="text" id="setAvatarInput" class="auth-input" placeholder="Введите эмодзи 😎">
+                        <div style="text-align:center; font-size:0.75rem; opacity:0.7; margin:2px 0;">или</div>
+                        <label class="file-upload-btn">
+                            📷 Загрузить фото профиля
+                            <input type="file" id="avatarFileInput" accept="image/*" style="display:none;">
+                        </label>
+                    </div>
+
+                    <button class="auth-btn" id="saveProfileBtn" style="background:#2ec4b6; color:#fff;">💾 Сохранить аккаунт</button>
+                </div>
+
+                <!-- Подраздел: Настройки чатов -->
+                <div id="chatsSubSection" style="display:none; flex-direction:column; gap:10px; border-top:1px solid var(--border-color); padding-top:10px;">
+                    <h4>💬 Внешний вид и чаты</h4>
+                    <div class="setting-group">
+                        <label>Тема оформления:</label>
+                        <select id="themeSelect" class="setting-select">
+                            <option value="theme-classic">🪵 Классическая</option>
+                            <option value="theme-dark">🌙 Тёмная</option>
+                            <option value="theme-light">☀️ Светлая</option>
+                            <option value="theme-neon">⚡ Неоновая</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-group">
+                        <label>Размер текста:</label>
+                        <select id="fontSelect" class="setting-select">
+                            <option value="font-small">Мелкий</option>
+                            <option value="font-medium">Средний</option>
+                            <option value="font-large">Крупный</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button class="auth-btn btn-danger" id="logoutBtn" style="margin-top: 10px;">Выйти с аккаунта</button>
+            </div>
+        </div>
+
         <!-- МОДАЛКА ПРОСМОТРА ПРОФИЛЯ ПОЛЬЗОВАТЕЛЯ -->
         <div class="modal-overlay" id="profileModalOverlay">
             <div class="modal-card">
@@ -740,62 +934,27 @@
             </div>
         </div>
 
-        <!-- ШТОРКА НАСТРОЕК -->
+        <!-- ШТОРКА МЕНЮ -->
         <div class="sidebar-drawer" id="sidebarDrawer">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h3>⚙️ Настройки профиля</h3>
+                <h3>Idiagram</h3>
                 <button class="close-reply-btn" id="closeDrawerBtn" style="font-size:1.2rem;">✕</button>
             </div>
             
-            <div style="text-align: center; margin: 5px 0;">
+            <div style="text-align: center; margin: 10px 0;">
                 <div id="drawerAvatar" class="chat-item-avatar" style="width:75px; height:75px; margin:0 auto; font-size:2rem;">🐱</div>
                 <h4 id="drawerUsername" style="margin-top:5px;">Имя</h4>
                 <div id="drawerUserTag" style="font-size:0.85rem; color:#ffd700; font-weight:bold;">@username</div>
                 <div id="drawerUserId" style="font-size:0.75rem; opacity:0.7;">ID: --</div>
             </div>
 
-            <div class="setting-group">
-                <label style="font-size:0.8rem; font-weight:bold;">Юзернейм (@имя):</label>
-                <input type="text" id="setUsernameInput" class="auth-input" placeholder="user_1">
+            <!-- СПИСОК ПУНКТОВ БОКОВОГО МЕНЮ -->
+            <div class="drawer-menu-list">
+                <div class="drawer-menu-item" id="openSettingsBtn">
+                    <span style="font-size:1.2rem;">⚙️</span>
+                    <span>Настройки</span>
+                </div>
             </div>
-
-            <div class="setting-group">
-                <label style="font-size:0.8rem; font-weight:bold;">Описание профиля (О себе):</label>
-                <textarea id="setBioInput" class="auth-input" style="height:60px; resize:none;" placeholder="Расскажите о себе..."></textarea>
-            </div>
-
-            <div class="setting-group">
-                <label style="font-size:0.8rem; font-weight:bold;">Аватар (Эмодзи или Фото):</label>
-                <input type="text" id="setAvatarInput" class="auth-input" placeholder="Введите эмодзи 😎">
-                <div style="text-align:center; font-size:0.75rem; opacity:0.7; margin:2px 0;">или</div>
-                <label class="file-upload-btn">
-                    📷 Загрузить фото профиля
-                    <input type="file" id="avatarFileInput" accept="image/*" style="display:none;">
-                </label>
-            </div>
-
-            <button class="auth-btn" id="saveProfileBtn" style="background:#2ec4b6; color:#fff;">💾 Сохранить профиль</button>
-
-            <div class="setting-group">
-                <label>Тема оформления:</label>
-                <select id="themeSelect" class="setting-select">
-                    <option value="theme-classic">🪵 Классическая</option>
-                    <option value="theme-dark">🌙 Тёмная</option>
-                    <option value="theme-light">☀️ Светлая</option>
-                    <option value="theme-neon">⚡ Неоновая</option>
-                </select>
-            </div>
-
-            <div class="setting-group">
-                <label>Размер текста:</label>
-                <select id="fontSelect" class="setting-select">
-                    <option value="font-small">Мелкий</option>
-                    <option value="font-medium">Средний</option>
-                    <option value="font-large">Крупный</option>
-                </select>
-            </div>
-
-            <button class="auth-btn btn-danger" id="logoutBtn" style="margin-top: auto;">Выйти с аккаунта</button>
         </div>
 
         <!-- ЭКРАН ВХОДА -->
@@ -1314,7 +1473,6 @@
             const bubble = document.createElement('div');
             bubble.className = 'msg-bubble';
 
-            // --- АНАЛИЗ ТЕКСТА И ЭФФЕКТЫ ---
             const lowerText = (data.text || '').toLowerCase();
             let fxClass = '';
             let fxElements = '';
@@ -1466,6 +1624,45 @@
             }
         });
 
+        // ЛОГИКА ОКНА НАСТРОЕК
+        const settingsModalOverlay = document.getElementById('settingsModalOverlay');
+        const accountSubSection = document.getElementById('accountSubSection');
+        const chatsSubSection = document.getElementById('chatsSubSection');
+
+        document.getElementById('openSettingsBtn').addEventListener('click', () => {
+            closeDrawer();
+            accountSubSection.style.display = 'none';
+            chatsSubSection.style.display = 'none';
+            settingsModalOverlay.classList.add('active');
+        });
+
+        document.getElementById('closeSettingsModalBtn').addEventListener('click', () => {
+            settingsModalOverlay.classList.remove('active');
+        });
+
+        document.getElementById('setAccountBtn').addEventListener('click', () => {
+            const isVisible = accountSubSection.style.display === 'flex';
+            accountSubSection.style.display = isVisible ? 'none' : 'flex';
+            chatsSubSection.style.display = 'none';
+        });
+
+        document.getElementById('setChatBtn').addEventListener('click', () => {
+            const isVisible = chatsSubSection.style.display === 'flex';
+            chatsSubSection.style.display = isVisible ? 'none' : 'flex';
+            accountSubSection.style.display = 'none';
+        });
+
+        document.getElementById('languageBtn').addEventListener('click', () => {
+            const langTag = document.getElementById('currentLangTag');
+            if (langTag.innerText === 'Русский') {
+                langTag.innerText = 'English';
+                alert('Язык изменён на English');
+            } else {
+                langTag.innerText = 'Русский';
+                alert('Язык изменён на Русский');
+            }
+        });
+
         document.getElementById('saveProfileBtn').addEventListener('click', async () => {
             let newUsernameTag = document.getElementById('setUsernameInput').value.trim().replace(/^@/, '');
             const newBio = document.getElementById('setBioInput').value.trim();
@@ -1496,7 +1693,7 @@
             currentAvatar = newAvatar;
 
             alert("Профиль успешно сохранён!");
-            closeDrawer();
+            accountSubSection.style.display = 'none';
         });
 
         const stickersPanel = document.getElementById('stickersPanel');
@@ -1899,18 +2096,6 @@
 
         document.getElementById('closeDrawerBtn').addEventListener('click', closeDrawer);
         overlay.addEventListener('click', closeDrawer);
-
-        drawer.addEventListener('click', (e) => {
-            const isInput = e.target.tagName === 'INPUT' || 
-                            e.target.tagName === 'TEXTAREA' || 
-                            e.target.tagName === 'SELECT' || 
-                            e.target.tagName === 'LABEL' ||
-                            e.target.closest('label');
-
-            if (!isInput) {
-                closeDrawer();
-            }
-        });
 
         let drawerStartX = 0;
         drawer.addEventListener('touchstart', (e) => {
