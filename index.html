@@ -130,7 +130,6 @@
 
         .drawer-overlay.active { display: block; }
 
-        /* Стилевое оформление списка меню в боковой шторке */
         .drawer-menu-list {
             display: flex;
             flex-direction: column;
@@ -150,19 +149,16 @@
             font-weight: 500;
             transition: background 0.2s, transform 0.1s;
         }
-        .drawer-menu-item:hover {
-            background: var(--bg-chat-active);
-        }
-        .drawer-menu-item:active {
-            transform: scale(0.98);
-        }
+        .drawer-menu-item:hover { background: var(--bg-chat-active); }
+        .drawer-menu-item:active { transform: scale(0.98); }
 
         .setting-group {
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 6px;
             border-bottom: 1px solid var(--border-color);
-            padding-bottom: 10px;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
         }
 
         .setting-select {
@@ -210,9 +206,7 @@
             position: relative;
         }
 
-        .chat-item:hover, .chat-item.active {
-            background-color: var(--bg-chat-active);
-        }
+        .chat-item:hover, .chat-item.active { background-color: var(--bg-chat-active); }
 
         .chat-item-avatar {
             width: 45px;
@@ -308,9 +302,7 @@
             box-shadow: 0 0 12px #ffd700;
         }
 
-        .message-row.highlight-msg {
-            animation: highlightPulse 2s ease-in-out;
-        }
+        .message-row.highlight-msg { animation: highlightPulse 2s ease-in-out; }
 
         @keyframes highlightPulse {
             0% { background-color: rgba(255, 215, 0, 0.5); transform: scale(1.02); }
@@ -353,7 +345,6 @@
             color: var(--text-my);
         }
 
-        /* --- ЭФФЕКТЫ И ПОДСВЕТКА СООБЩЕНИЙ --- */
         .fx-decor {
             position: absolute;
             font-size: 1rem;
@@ -429,9 +420,7 @@
             align-self: flex-start;
             margin-bottom: 5px;
         }
-        .typing-indicator-row.active {
-            display: flex;
-        }
+        .typing-indicator-row.active { display: flex; }
         .typing-bubble {
             background-color: var(--bg-msg-other);
             color: var(--text-main);
@@ -648,7 +637,7 @@
             border: 1px solid var(--border-color);
         }
 
-        /* МОДАЛЬНЫЕ ОКНА */
+        /* ПОЛНОЭКРАННЫЕ ОКНА И МОДАЛКИ */
         .modal-overlay {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -659,6 +648,43 @@
             align-items: center;
         }
         .modal-overlay.active { display: flex; }
+
+        /* Полноэкранный стиль контейнера для Настроек */
+        .fullscreen-window {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--bg-container);
+            color: var(--text-main);
+            z-index: 55;
+            display: none;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        .fullscreen-window.active { display: flex; }
+
+        .fullscreen-header {
+            background: var(--bg-header);
+            color: var(--text-header);
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 2px solid var(--border-color);
+            font-size: 1.1rem;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .fullscreen-body {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+        }
+
         .modal-card {
             background: var(--bg-container);
             color: var(--text-main);
@@ -676,47 +702,53 @@
             overflow-y: auto;
         }
 
-        /* СТИЛИ МЕНЮ НАСТРОЕК В МОДАЛКЕ */
         .settings-menu-list {
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 6px;
         }
         .settings-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 10px 12px;
-            border-radius: 8px;
+            padding: 12px 14px;
+            border-radius: 10px;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: background 0.2s, transform 0.1s;
             background: var(--bg-window);
             border: 1px solid var(--border-color);
         }
-        .settings-item:hover {
-            background: var(--bg-chat-active);
-        }
+        .settings-item:hover { background: var(--bg-chat-active); }
+        .settings-item:active { transform: scale(0.98); }
+
         .settings-item-left {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             font-size: 0.95rem;
             font-weight: 500;
         }
         .settings-icon {
-            width: 28px;
-            height: 28px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.9rem;
+            font-size: 1rem;
             color: #fff;
         }
         .settings-item-extra {
             font-size: 0.85rem;
             color: #2ec4b6;
             font-weight: bold;
+        }
+
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
         }
 
         /* КАРТОЧКА ПРОФИЛЯ */
@@ -774,131 +806,333 @@
     <div class="messenger-container" id="messenger">
         <div class="drawer-overlay" id="drawerOverlay"></div>
 
-        <!-- МОДАЛКА НАСТРОЕК (СТРАНИЦА НАСТРОЕК) -->
-        <div class="modal-overlay" id="settingsModalOverlay">
-            <div class="modal-card">
-                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:8px;">
-                    <h3 style="font-size:1.1rem;">⚙️ Настройки</h3>
-                    <button class="close-reply-btn" id="closeSettingsModalBtn">✕</button>
-                </div>
-
+        <!-- ГЛАВНОЕ ПОЛНОЭКРАННОЕ ОКНО НАСТРОЕК -->
+        <div class="fullscreen-window" id="mainSettingsWindow">
+            <div class="fullscreen-header">
+                <button class="back-btn" id="closeMainSettingsBtn" style="display:block;">◄</button>
+                <span>⚙️ Настройки</span>
+            </div>
+            <div class="fullscreen-body">
                 <div class="settings-menu-list">
-                    <div class="settings-item" id="setAccountBtn">
+                    <div class="settings-item" id="openAccountWin">
                         <div class="settings-item-left">
                             <div class="settings-icon" style="background:#0088cc;">👤</div>
                             <span>Аккаунт</span>
                         </div>
+                        <span>❯</span>
                     </div>
 
-                    <div class="settings-item" id="setChatBtn">
+                    <div class="settings-item" id="openChatWin">
                         <div class="settings-item-left">
                             <div class="settings-icon" style="background:#ff9800;">💬</div>
                             <span>Настройки чатов</span>
                         </div>
+                        <span>❯</span>
                     </div>
 
-                    <div class="settings-item" onclick="alert('Раздел «Конфиденциальность» находится в разработке')">
+                    <div class="settings-item" id="openPrivacyWin">
                         <div class="settings-item-left">
                             <div class="settings-icon" style="background:#4caf50;">🔑</div>
                             <span>Конфиденциальность</span>
                         </div>
+                        <span>❯</span>
                     </div>
 
-                    <div class="settings-item" onclick="alert('Раздел «Уведомления» находится в разработке')">
+                    <div class="settings-item" id="openNotifWin">
                         <div class="settings-item-left">
                             <div class="settings-icon" style="background:#f44336;">🔔</div>
                             <span>Уведомления</span>
                         </div>
+                        <span>❯</span>
                     </div>
 
-                    <div class="settings-item" onclick="alert('Раздел «Данные и память» находится в разработке')">
+                    <div class="settings-item" id="openStorageWin">
                         <div class="settings-item-left">
                             <div class="settings-icon" style="background:#2196f3;">💾</div>
                             <span>Данные и память</span>
                         </div>
+                        <span>❯</span>
                     </div>
 
-                    <div class="settings-item" onclick="alert('Раздел «Папки с чатами» находится в разработке')">
+                    <div class="settings-item" id="openFoldersWin">
                         <div class="settings-item-left">
                             <div class="settings-icon" style="background:#0288d1;">📁</div>
                             <span>Папки с чатами</span>
                         </div>
+                        <span>❯</span>
                     </div>
 
-                    <div class="settings-item" onclick="alert('Устройства: Подключено текущее сеансовое устройство (1)')">
+                    <div class="settings-item" id="openDevicesWin">
                         <div class="settings-item-left">
                             <div class="settings-icon" style="background:#00bcd4;">💻</div>
                             <span>Устройства</span>
                         </div>
-                        <span class="settings-item-extra">1</span>
+                        <span class="settings-item-extra">1 ❯</span>
                     </div>
 
-                    <div class="settings-item" onclick="alert('Энергосбережение включено')">
+                    <div class="settings-item" id="openPowerWin">
                         <div class="settings-item-left">
                             <div class="settings-icon" style="background:#ff5722;">🔋</div>
                             <span>Энергосбережение</span>
                         </div>
+                        <span>❯</span>
                     </div>
 
-                    <div class="settings-item" id="languageBtn">
+                    <div class="settings-item" id="openLangWin">
                         <div class="settings-item-left">
                             <div class="settings-icon" style="background:#9c27b0;">🌐</div>
                             <span>Язык</span>
                         </div>
-                        <span class="settings-item-extra" id="currentLangTag">Русский</span>
+                        <span class="settings-item-extra" id="currentLangTag">Русский ❯</span>
                     </div>
                 </div>
 
-                <!-- Подраздел: Настройки аккаунта -->
-                <div id="accountSubSection" style="display:none; flex-direction:column; gap:10px; border-top:1px solid var(--border-color); padding-top:10px;">
-                    <h4>👤 Мой аккаунт</h4>
-                    <div class="setting-group">
-                        <label style="font-size:0.8rem; font-weight:bold;">Юзернейм (@имя):</label>
-                        <input type="text" id="setUsernameInput" class="auth-input" placeholder="user_1">
-                    </div>
+                <button class="auth-btn btn-danger" id="logoutBtn" style="margin-top:20px; align-self:center;">Выйти с аккаунта</button>
+            </div>
+        </div>
 
-                    <div class="setting-group">
-                        <label style="font-size:0.8rem; font-weight:bold;">Описание профиля (О себе):</label>
-                        <textarea id="setBioInput" class="auth-input" style="height:60px; resize:none;" placeholder="Расскажите о себе..."></textarea>
-                    </div>
-
-                    <div class="setting-group">
-                        <label style="font-size:0.8rem; font-weight:bold;">Аватар (Эмодзи или Фото):</label>
-                        <input type="text" id="setAvatarInput" class="auth-input" placeholder="Введите эмодзи 😎">
-                        <div style="text-align:center; font-size:0.75rem; opacity:0.7; margin:2px 0;">или</div>
-                        <label class="file-upload-btn">
-                            📷 Загрузить фото профиля
-                            <input type="file" id="avatarFileInput" accept="image/*" style="display:none;">
-                        </label>
-                    </div>
-
-                    <button class="auth-btn" id="saveProfileBtn" style="background:#2ec4b6; color:#fff;">💾 Сохранить аккаунт</button>
+        <!-- ПОЛНОЭКРАННОЕ ОКНО: АККАУНТ -->
+        <div class="fullscreen-window" id="accountWindow">
+            <div class="fullscreen-header">
+                <button class="back-btn backToSettingsBtn" style="display:block;">◄</button>
+                <span>👤 Аккаунт</span>
+            </div>
+            <div class="fullscreen-body">
+                <div class="setting-group">
+                    <label style="font-size:0.85rem; font-weight:bold;">Юзернейм (@имя):</label>
+                    <input type="text" id="setUsernameInput" class="auth-input" placeholder="user_1" style="max-width:100%;">
                 </div>
 
-                <!-- Подраздел: Настройки чатов -->
-                <div id="chatsSubSection" style="display:none; flex-direction:column; gap:10px; border-top:1px solid var(--border-color); padding-top:10px;">
-                    <h4>💬 Внешний вид и чаты</h4>
-                    <div class="setting-group">
-                        <label>Тема оформления:</label>
-                        <select id="themeSelect" class="setting-select">
-                            <option value="theme-classic">🪵 Классическая</option>
-                            <option value="theme-dark">🌙 Тёмная</option>
-                            <option value="theme-light">☀️ Светлая</option>
-                            <option value="theme-neon">⚡ Неоновая</option>
-                        </select>
-                    </div>
+                <div class="setting-group">
+                    <label style="font-size:0.85rem; font-weight:bold;">Описание профиля (О себе):</label>
+                    <textarea id="setBioInput" class="auth-input" style="max-width:100%; height:80px; resize:none;" placeholder="Расскажите о себе..."></textarea>
+                </div>
 
-                    <div class="setting-group">
-                        <label>Размер текста:</label>
-                        <select id="fontSelect" class="setting-select">
-                            <option value="font-small">Мелкий</option>
-                            <option value="font-medium">Средний</option>
-                            <option value="font-large">Крупный</option>
-                        </select>
+                <div class="setting-group">
+                    <label style="font-size:0.85rem; font-weight:bold;">Аватар (Эмодзи или Фото):</label>
+                    <input type="text" id="setAvatarInput" class="auth-input" placeholder="Введите эмодзи 😎" style="max-width:100%;">
+                    <div style="text-align:center; font-size:0.75rem; opacity:0.7; margin:4px 0;">или</div>
+                    <label class="file-upload-btn">
+                        📷 Загрузить фото профиля
+                        <input type="file" id="avatarFileInput" accept="image/*" style="display:none;">
+                    </label>
+                </div>
+
+                <button class="auth-btn" id="saveProfileBtn" style="background:#2ec4b6; color:#fff; max-width:100%;">💾 Сохранить аккаунт</button>
+            </div>
+        </div>
+
+        <!-- ПОЛНОЭКРАННОЕ ОКНО: НАСТРОЙКИ ЧАТОВ -->
+        <div class="fullscreen-window" id="chatsWindow">
+            <div class="fullscreen-header">
+                <button class="back-btn backToSettingsBtn" style="display:block;">◄</button>
+                <span>💬 Настройки чатов</span>
+            </div>
+            <div class="fullscreen-body">
+                <div class="setting-group">
+                    <label style="font-weight:bold;">Тема оформления:</label>
+                    <select id="themeSelect" class="setting-select">
+                        <option value="theme-classic">🪵 Классическая</option>
+                        <option value="theme-dark">🌙 Тёмная</option>
+                        <option value="theme-light">☀️ Светлая</option>
+                        <option value="theme-neon">⚡ Неоновая</option>
+                    </select>
+                </div>
+
+                <div class="setting-group">
+                    <label style="font-weight:bold;">Размер текста сообщений:</label>
+                    <select id="fontSelect" class="setting-select">
+                        <option value="font-small">Мелкий</option>
+                        <option value="font-medium">Средний</option>
+                        <option value="font-large">Крупный</option>
+                    </select>
+                </div>
+
+                <div class="setting-group">
+                    <div class="toggle-switch">
+                        <span>Анимация гифок и эффектов</span>
+                        <input type="checkbox" checked style="width:20px; height:20px;">
+                    </div>
+                    <div class="toggle-switch">
+                        <span>Отправка по Enter</span>
+                        <input type="checkbox" checked style="width:20px; height:20px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ПОЛНОЭКРАННОЕ ОКНО: КОНФИДЕНЦИАЛЬНОСТЬ -->
+        <div class="fullscreen-window" id="privacyWindow">
+            <div class="fullscreen-header">
+                <button class="back-btn backToSettingsBtn" style="display:block;">◄</button>
+                <span>🔑 Конфиденциальность</span>
+            </div>
+            <div class="fullscreen-body">
+                <div class="setting-group">
+                    <div class="toggle-switch">
+                        <span>Двухэтапная аутентификация</span>
+                        <input type="checkbox" style="width:20px; height:20px;">
+                    </div>
+                    <div class="toggle-switch">
+                        <span>Код-пароль приложения</span>
+                        <input type="checkbox" style="width:20px; height:20px;">
                     </div>
                 </div>
 
-                <button class="auth-btn btn-danger" id="logoutBtn" style="margin-top: 10px;">Выйти с аккаунта</button>
+                <div class="setting-group">
+                    <label style="font-size:0.85rem; font-weight:bold;">Кто видит мой статус в сети:</label>
+                    <select class="setting-select">
+                        <option>Все пользователи</option>
+                        <option>Мои контакты</option>
+                        <option>Никто</option>
+                    </select>
+                </div>
+
+                <div class="setting-group">
+                    <label style="font-size:0.85rem; font-weight:bold;">Кто может писать мне в ЛС:</label>
+                    <select class="setting-select">
+                        <option>Все пользователи</option>
+                        <option>Только проверенные</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- ПОЛНОЭКРАННОЕ ОКНО: УВЕДОМЛЕНИЯ -->
+        <div class="fullscreen-window" id="notifWindow">
+            <div class="fullscreen-header">
+                <button class="back-btn backToSettingsBtn" style="display:block;">◄</button>
+                <span>🔔 Уведомления</span>
+            </div>
+            <div class="fullscreen-body">
+                <div class="setting-group">
+                    <div class="toggle-switch">
+                        <span>Уведомления из личных чатов</span>
+                        <input type="checkbox" checked style="width:20px; height:20px;">
+                    </div>
+                    <div class="toggle-switch">
+                        <span>Уведомления из общего чата</span>
+                        <input type="checkbox" checked style="width:20px; height:20px;">
+                    </div>
+                    <div class="toggle-switch">
+                        <span>Звук при получении сообщений</span>
+                        <input type="checkbox" checked style="width:20px; height:20px;">
+                    </div>
+                    <div class="toggle-switch">
+                        <span>Вибрация</span>
+                        <input type="checkbox" checked style="width:20px; height:20px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ПОЛНОЭКРАННОЕ ОКНО: ДАННЫЕ И ПАМЯТЬ -->
+        <div class="fullscreen-window" id="storageWindow">
+            <div class="fullscreen-header">
+                <button class="back-btn backToSettingsBtn" style="display:block;">◄</button>
+                <span>💾 Данные и память</span>
+            </div>
+            <div class="fullscreen-body">
+                <div class="setting-group">
+                    <label style="font-weight:bold;">Использование памяти:</label>
+                    <div style="background:var(--bg-window); padding:10px; border-radius:8px; border:1px solid var(--border-color); font-size:0.9rem;">
+                        Кэш изображений: <b>1.2 МБ</b><br>
+                        База сообщений: <b>340 КБ</b>
+                    </div>
+                    <button class="action-fast-btn btn-danger" style="margin-top:8px;" onclick="alert('Кэш приложения очищен!')">🧹 Очистить кэш</button>
+                </div>
+
+                <div class="setting-group">
+                    <div class="toggle-switch">
+                        <span>Автозагрузка медиа (WiFi)</span>
+                        <input type="checkbox" checked style="width:20px; height:20px;">
+                    </div>
+                    <div class="toggle-switch">
+                        <span>Автозагрузка медиа (Мобильная сеть)</span>
+                        <input type="checkbox" checked style="width:20px; height:20px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ПОЛНОЭКРАННОЕ ОКНО: ПАПКИ С ЧАТАМИ -->
+        <div class="fullscreen-window" id="foldersWindow">
+            <div class="fullscreen-header">
+                <button class="back-btn backToSettingsBtn" style="display:block;">◄</button>
+                <span>📁 Папки с чатами</span>
+            </div>
+            <div class="fullscreen-body">
+                <div class="setting-group">
+                    <label style="font-weight:bold;">Мои папки:</label>
+                    <div style="display:flex; flex-direction:column; gap:6px;">
+                        <div class="settings-item"><span>💬 Личные чаты</span><span class="settings-item-extra">Вкл</span></div>
+                        <div class="settings-item"><span>📢 Общие каналы</span><span class="settings-item-extra">Вкл</span></div>
+                    </div>
+                </div>
+                <button class="auth-btn" style="max-width:100%;" onclick="alert('Функция создания пользовательских папок находится в разработке')">➕ Создать новую папку</button>
+            </div>
+        </div>
+
+        <!-- ПОЛНОЭКРАННОЕ ОКНО: УСТРОЙСТВА -->
+        <div class="fullscreen-window" id="devicesWindow">
+            <div class="fullscreen-header">
+                <button class="back-btn backToSettingsBtn" style="display:block;">◄</button>
+                <span>💻 Устройства</span>
+            </div>
+            <div class="fullscreen-body">
+                <div class="setting-group">
+                    <label style="font-weight:bold;">Текущий сеанс:</label>
+                    <div class="settings-item" style="flex-direction:column; align-items:flex-start; gap:4px;">
+                        <div style="font-weight:bold; color:#2ec4b6;">📱 Мобильное устройство (XOS / WebApp)</div>
+                        <div style="font-size:0.8rem; opacity:0.8;">Idiagram Client • В сети</div>
+                        <div style="font-size:0.75rem; opacity:0.6;">IP: Активное подключение Firebase</div>
+                    </div>
+                </div>
+                <button class="auth-btn btn-danger" style="max-width:100%;" onclick="alert('Все остальные сеансы успешно завершены!')">Завершить все другие сеансы</button>
+            </div>
+        </div>
+
+        <!-- ПОЛНОЭКРАННОЕ ОКНО: ЭНЕРГОСБЕРЕЖЕНИЕ -->
+        <div class="fullscreen-window" id="powerWindow">
+            <div class="fullscreen-header">
+                <button class="back-btn backToSettingsBtn" style="display:block;">◄</button>
+                <span>🔋 Энергосбережение</span>
+            </div>
+            <div class="fullscreen-body">
+                <div class="setting-group">
+                    <div class="toggle-switch">
+                        <span>Режим экономии батареи</span>
+                        <input type="checkbox" style="width:20px; height:20px;">
+                    </div>
+                    <div class="toggle-switch">
+                        <span>Отключать анимации стикеров</span>
+                        <input type="checkbox" style="width:20px; height:20px;">
+                    </div>
+                    <div class="toggle-switch">
+                        <span>Отключать фоновые спецэффекты</span>
+                        <input type="checkbox" style="width:20px; height:20px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ПОЛНОЭКРАННОЕ ОКНО: ЯЗЫК -->
+        <div class="fullscreen-window" id="langWindow">
+            <div class="fullscreen-header">
+                <button class="back-btn backToSettingsBtn" style="display:block;">◄</button>
+                <span>🌐 Язык приложения</span>
+            </div>
+            <div class="fullscreen-body">
+                <div class="settings-menu-list">
+                    <div class="settings-item" onclick="setLanguage('Русский')">
+                        <span>🇷🇺 Русский</span>
+                        <span id="langCheckRu" style="color:#2ec4b6; font-weight:bold;">✓</span>
+                    </div>
+                    <div class="settings-item" onclick="setLanguage('English')">
+                        <span>🇬🇧 English</span>
+                        <span id="langCheckEn" style="display:none; color:#2ec4b6; font-weight:bold;">✓</span>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -917,7 +1151,7 @@
                 </div>
                 <div>
                     <label style="font-size:0.75rem; font-weight:bold; opacity:0.8;">О себе:</label>
-                    <div class="profile-bio-box" id="viewProfileBio">Описание отсутсвует</div>
+                    <div class="profile-bio-box" id="viewProfileBio">Описание отсутствует</div>
                 </div>
                 <button class="auth-btn" id="startDmFromProfileBtn" style="width:100%; margin-top:5px;">💬 Написать сообщение</button>
             </div>
@@ -948,7 +1182,6 @@
                 <div id="drawerUserId" style="font-size:0.75rem; opacity:0.7;">ID: --</div>
             </div>
 
-            <!-- СПИСОК ПУНКТОВ БОКОВОГО МЕНЮ -->
             <div class="drawer-menu-list">
                 <div class="drawer-menu-item" id="openSettingsBtn">
                     <span style="font-size:1.2rem;">⚙️</span>
@@ -1083,7 +1316,6 @@
         let editingMsgId = null;
         let typingTimeout = null;
 
-        // UI Элементы
         const authScreen = document.getElementById('authScreen');
         const messenger = document.getElementById('messenger');
         const chatMessages = document.getElementById('chatMessages');
@@ -1505,9 +1737,7 @@
                 `;
             }
 
-            if (fxClass) {
-                row.classList.add(fxClass);
-            }
+            if (fxClass) row.classList.add(fxClass);
 
             let replyHTML = '';
             if (data.replyTo) {
@@ -1604,11 +1834,7 @@
             }
 
             const startDmBtn = document.getElementById('startDmFromProfileBtn');
-            if (username === currentUser) {
-                startDmBtn.style.display = 'none';
-            } else {
-                startDmBtn.style.display = 'block';
-            }
+            startDmBtn.style.display = (username === currentUser) ? 'none' : 'block';
 
             profileModalOverlay.classList.add('active');
         }
@@ -1624,44 +1850,59 @@
             }
         });
 
-        // ЛОГИКА ОКНА НАСТРОЕК
-        const settingsModalOverlay = document.getElementById('settingsModalOverlay');
-        const accountSubSection = document.getElementById('accountSubSection');
-        const chatsSubSection = document.getElementById('chatsSubSection');
+        // --- УПРАВЛЕНИЕ ПОЛНОЭКРАННЫМИ ОКНАМИ НАСТРОЕК ---
+        const mainSettingsWindow = document.getElementById('mainSettingsWindow');
+
+        function openSubWindow(winId) {
+            document.getElementById(winId).classList.add('active');
+        }
+
+        function closeSubWindow(winId) {
+            document.getElementById(winId).classList.remove('active');
+        }
 
         document.getElementById('openSettingsBtn').addEventListener('click', () => {
             closeDrawer();
-            accountSubSection.style.display = 'none';
-            chatsSubSection.style.display = 'none';
-            settingsModalOverlay.classList.add('active');
+            mainSettingsWindow.classList.add('active');
         });
 
-        document.getElementById('closeSettingsModalBtn').addEventListener('click', () => {
-            settingsModalOverlay.classList.remove('active');
+        document.getElementById('closeMainSettingsBtn').addEventListener('click', () => {
+            mainSettingsWindow.classList.remove('active');
         });
 
-        document.getElementById('setAccountBtn').addEventListener('click', () => {
-            const isVisible = accountSubSection.style.display === 'flex';
-            accountSubSection.style.display = isVisible ? 'none' : 'flex';
-            chatsSubSection.style.display = 'none';
+        // Назначение перехода для всех дочерних окон
+        document.getElementById('openAccountWin').addEventListener('click', () => openSubWindow('accountWindow'));
+        document.getElementById('openChatWin').addEventListener('click', () => openSubWindow('chatsWindow'));
+        document.getElementById('openPrivacyWin').addEventListener('click', () => openSubWindow('privacyWindow'));
+        document.getElementById('openNotifWin').addEventListener('click', () => openSubWindow('notifWindow'));
+        document.getElementById('openStorageWin').addEventListener('click', () => openSubWindow('storageWindow'));
+        document.getElementById('openFoldersWin').addEventListener('click', () => openSubWindow('foldersWindow'));
+        document.getElementById('openDevicesWin').addEventListener('click', () => openSubWindow('devicesWindow'));
+        document.getElementById('openPowerWin').addEventListener('click', () => openSubWindow('powerWindow'));
+        document.getElementById('openLangWin').addEventListener('click', () => openSubWindow('langWindow'));
+
+        document.querySelectorAll('.backToSettingsBtn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const win = e.target.closest('.fullscreen-window');
+                if (win) win.classList.remove('active');
+            });
         });
 
-        document.getElementById('setChatBtn').addEventListener('click', () => {
-            const isVisible = chatsSubSection.style.display === 'flex';
-            chatsSubSection.style.display = isVisible ? 'none' : 'flex';
-            accountSubSection.style.display = 'none';
-        });
-
-        document.getElementById('languageBtn').addEventListener('click', () => {
+        window.setLanguage = function(lang) {
             const langTag = document.getElementById('currentLangTag');
-            if (langTag.innerText === 'Русский') {
-                langTag.innerText = 'English';
-                alert('Язык изменён на English');
+            const ruCheck = document.getElementById('langCheckRu');
+            const enCheck = document.getElementById('langCheckEn');
+
+            if (lang === 'English') {
+                langTag.innerText = 'English ❯';
+                ruCheck.style.display = 'none';
+                enCheck.style.display = 'inline';
             } else {
-                langTag.innerText = 'Русский';
-                alert('Язык изменён на Русский');
+                langTag.innerText = 'Русский ❯';
+                ruCheck.style.display = 'inline';
+                enCheck.style.display = 'none';
             }
-        });
+        };
 
         document.getElementById('saveProfileBtn').addEventListener('click', async () => {
             let newUsernameTag = document.getElementById('setUsernameInput').value.trim().replace(/^@/, '');
@@ -1693,7 +1934,7 @@
             currentAvatar = newAvatar;
 
             alert("Профиль успешно сохранён!");
-            accountSubSection.style.display = 'none';
+            closeSubWindow('accountWindow');
         });
 
         const stickersPanel = document.getElementById('stickersPanel');
@@ -2037,9 +2278,7 @@
                 time: time
             };
 
-            if (stickerData) {
-                msgObject.sticker = stickerData;
-            }
+            if (stickerData) msgObject.sticker = stickerData;
 
             if (text === '🎰') {
                 const symbols = ['🍋', '🍒', '7️⃣', '🍇'];
