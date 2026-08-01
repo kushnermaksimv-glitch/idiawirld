@@ -922,7 +922,7 @@
             </div>
         </div>
 
-        <!-- ПОЛНОЭКРАННОЕ ОКНО: НАСТРОЙКИ ЧАТОВ -->
+        <!-- ПОЛНОЭКРАННОЕ ОКНО: НАСТРОЕКИ ЧАТОВ -->
         <div class="fullscreen-window" id="chatsWindow">
             <div class="fullscreen-header">
                 <button class="back-btn backToSettingsBtn" style="display:block;">◄</button>
@@ -1850,8 +1850,31 @@
             }
         });
 
-        // --- УПРАВЛЕНИЕ ПОЛНОЭКРАННЫМИ ОКНАМИ НАСТРОЕК ---
+        // --- УПРАВЛЕНИЕ ШТОРКОЙ И ПОЛНОЭКРАННЫМИ ОКНАМИ ---
+        const sidebarDrawer = document.getElementById('sidebarDrawer');
+        const drawerOverlay = document.getElementById('drawerOverlay');
         const mainSettingsWindow = document.getElementById('mainSettingsWindow');
+
+        function openDrawer() {
+            sidebarDrawer.classList.add('active');
+            drawerOverlay.classList.add('active');
+        }
+
+        function closeDrawer() {
+            sidebarDrawer.classList.remove('active');
+            drawerOverlay.classList.remove('active');
+        }
+
+        document.getElementById('openMenuBtn').addEventListener('click', openDrawer);
+        document.getElementById('closeDrawerBtn').addEventListener('click', closeDrawer);
+        drawerOverlay.addEventListener('click', closeDrawer);
+
+        document.getElementById('backBtn').addEventListener('click', () => {
+            messenger.classList.remove('open-chat');
+            document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('globalChatItem').classList.add('active');
+            openChat('global', 'Общий чат страны', '📢');
+        });
 
         function openSubWindow(winId) {
             document.getElementById(winId).classList.add('active');
@@ -1870,7 +1893,6 @@
             mainSettingsWindow.classList.remove('active');
         });
 
-        // Назначение перехода для всех дочерних окон
         document.getElementById('openAccountWin').addEventListener('click', () => openSubWindow('accountWindow'));
         document.getElementById('openChatWin').addEventListener('click', () => openSubWindow('chatsWindow'));
         document.getElementById('openPrivacyWin').addEventListener('click', () => openSubWindow('privacyWindow'));
@@ -1886,6 +1908,14 @@
                 const win = e.target.closest('.fullscreen-window');
                 if (win) win.classList.remove('active');
             });
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            if (currentUser) {
+                await set(ref(database, 'status/' + currentUser), { state: 'offline', last_changed: Date.now() });
+            }
+            localStorage.removeItem('idi_user');
+            location.reload();
         });
 
         window.setLanguage = function(lang) {
@@ -2305,68 +2335,13 @@
             if (text) {
                 sendDirectMessage(text);
                 userInput.value = '';
-                cancelReply();
+                if (selectedMsgData || editingMsgId) cancelReply();
             }
         });
 
-        document.getElementById('globalChatItem').addEventListener('click', () => {
-            document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
-            document.getElementById('globalChatItem').classList.add('active');
-            openChat('global', 'Общий чат страны', '📢');
-        });
-
-        document.getElementById('backBtn').addEventListener('click', () => messenger.classList.remove('open-chat'));
-
-        const drawer = document.getElementById('sidebarDrawer');
-        const overlay = document.getElementById('drawerOverlay');
-
-        function closeDrawer() {
-            drawer.classList.remove('active');
-            overlay.classList.remove('active');
-        }
-
-        document.getElementById('openMenuBtn').addEventListener('click', () => {
-            drawer.classList.add('active');
-            overlay.classList.add('active');
-            document.getElementById('setAvatarInput').value = currentAvatar;
-            document.getElementById('setUsernameInput').value = currentUsernameTag;
-            document.getElementById('setBioInput').value = currentBio;
-        });
-
-        document.getElementById('closeDrawerBtn').addEventListener('click', closeDrawer);
-        overlay.addEventListener('click', closeDrawer);
-
-        let drawerStartX = 0;
-        drawer.addEventListener('touchstart', (e) => {
-            drawerStartX = e.touches[0].clientX;
-        }, { passive: true });
-
-        drawer.addEventListener('touchend', (e) => {
-            const diffX = e.changedTouches[0].clientX - drawerStartX;
-            if (diffX < -40) {
-                closeDrawer();
-            }
-        });
-
-        document.getElementById('logoutBtn').addEventListener('click', async () => {
-            if (currentUser) {
-                await set(ref(database, 'status/' + currentUser), { state: 'offline', last_changed: Date.now() });
-            }
-            localStorage.clear();
-            location.reload();
-        });
-
+        // Автозапуск приложения при наличии логина
         if (currentUser) {
-            get(ref(database, `users/${currentUser}`)).then((userSnap) => {
-                const userData = userSnap.val() || {};
-                currentUserId = userData.id;
-                currentUsernameTag = userData.usernameTag || `user_${userData.id}`;
-                currentAvatar = userData.avatar || '🐱';
-                currentBio = userData.bio || '';
-                const settings = userData.settings || {};
-                applyVisualSettings(settings.theme, settings.font);
-                initApp();
-            });
+            initApp();
         }
     </script>
 </body>
