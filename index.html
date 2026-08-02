@@ -19,6 +19,8 @@
             --text-header: #f3e5ab;
             --border-color: #b8860b;
             --font-size-msg: 0.9rem;
+            --toggle-bg: #ccc;
+            --toggle-active: #2ec4b6;
         }
 
         body.theme-dark {
@@ -34,6 +36,8 @@
             --text-my: #ffffff;
             --text-header: #bb86fc;
             --border-color: #333333;
+            --toggle-bg: #444;
+            --toggle-active: #bb86fc;
         }
 
         body.theme-light {
@@ -49,6 +53,8 @@
             --text-my: #ffffff;
             --text-header: #f0f4f8;
             --border-color: #bccadc;
+            --toggle-bg: #bccadc;
+            --toggle-active: #334e68;
         }
 
         body.theme-neon {
@@ -64,6 +70,8 @@
             --text-my: #ffffff;
             --text-header: #ff007f;
             --border-color: #ff007f;
+            --toggle-bg: #333;
+            --toggle-active: #ff007f;
         }
 
         body.font-small { --font-size-msg: 0.8rem; }
@@ -85,6 +93,7 @@
             align-items: center;
             min-height: 100vh;
             padding: 10px;
+            transition: background-color 0.3s;
         }
 
         .messenger-container {
@@ -98,8 +107,71 @@
             overflow: hidden;
             border: 2px solid var(--border-color);
             position: relative;
+            transition: background-color 0.3s, border-color 0.3s;
         }
 
+        /* Toggle Switch стили */
+        .toggle-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+            width: 100%;
+        }
+
+        .toggle-wrapper span {
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--toggle-bg);
+            transition: 0.3s;
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            content: "";
+            position: absolute;
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background-color: var(--toggle-active);
+        }
+
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(20px);
+        }
+
+        /* Остальные стили из оригинального кода */
         .sidebar-drawer {
             position: absolute;
             top: 0; left: -320px;
@@ -338,6 +410,7 @@
             font-size: var(--font-size-msg);
             word-break: break-word;
             position: relative;
+            transition: background-color 0.3s, color 0.3s;
         }
 
         .my-msg .msg-bubble {
@@ -637,7 +710,6 @@
             border: 1px solid var(--border-color);
         }
 
-        /* ПОЛНОЭКРАННЫЕ ОКНА И МОДАЛКИ */
         .modal-overlay {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -649,7 +721,6 @@
         }
         .modal-overlay.active { display: flex; }
 
-        /* Полноэкранный стиль контейнера для Настроек */
         .fullscreen-window {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -744,14 +815,6 @@
             font-weight: bold;
         }
 
-        .toggle-switch {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 8px 0;
-        }
-
-        /* КАРТОЧКА ПРОФИЛЯ */
         .profile-card-header {
             display: flex;
             flex-direction: column;
@@ -949,13 +1012,19 @@
                 </div>
 
                 <div class="setting-group">
-                    <div class="toggle-switch">
+                    <div class="toggle-wrapper">
                         <span>Анимация гифок и эффектов</span>
-                        <input type="checkbox" checked style="width:20px; height:20px;">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggleAnimations" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
                     </div>
-                    <div class="toggle-switch">
+                    <div class="toggle-wrapper">
                         <span>Отправка по Enter</span>
-                        <input type="checkbox" checked style="width:20px; height:20px;">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggleEnterSend" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
                     </div>
                 </div>
             </div>
@@ -969,30 +1038,36 @@
             </div>
             <div class="fullscreen-body">
                 <div class="setting-group">
-                    <div class="toggle-switch">
+                    <div class="toggle-wrapper">
                         <span>Двухэтапная аутентификация</span>
-                        <input type="checkbox" style="width:20px; height:20px;">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle2FA">
+                            <span class="toggle-slider"></span>
+                        </label>
                     </div>
-                    <div class="toggle-switch">
+                    <div class="toggle-wrapper">
                         <span>Код-пароль приложения</span>
-                        <input type="checkbox" style="width:20px; height:20px;">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggleAppPassword">
+                            <span class="toggle-slider"></span>
+                        </label>
                     </div>
                 </div>
 
                 <div class="setting-group">
                     <label style="font-size:0.85rem; font-weight:bold;">Кто видит мой статус в сети:</label>
-                    <select class="setting-select">
-                        <option>Все пользователи</option>
-                        <option>Мои контакты</option>
-                        <option>Никто</option>
+                    <select class="setting-select" id="statusVisibility">
+                        <option value="all">Все пользователи</option>
+                        <option value="contacts">Мои контакты</option>
+                        <option value="none">Никто</option>
                     </select>
                 </div>
 
                 <div class="setting-group">
                     <label style="font-size:0.85rem; font-weight:bold;">Кто может писать мне в ЛС:</label>
-                    <select class="setting-select">
-                        <option>Все пользователи</option>
-                        <option>Только проверенные</option>
+                    <select class="setting-select" id="dmPermission">
+                        <option value="all">Все пользователи</option>
+                        <option value="verified">Только проверенные</option>
                     </select>
                 </div>
             </div>
@@ -1006,21 +1081,33 @@
             </div>
             <div class="fullscreen-body">
                 <div class="setting-group">
-                    <div class="toggle-switch">
+                    <div class="toggle-wrapper">
                         <span>Уведомления из личных чатов</span>
-                        <input type="checkbox" checked style="width:20px; height:20px;">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggleNotifPrivate" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
                     </div>
-                    <div class="toggle-switch">
+                    <div class="toggle-wrapper">
                         <span>Уведомления из общего чата</span>
-                        <input type="checkbox" checked style="width:20px; height:20px;">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggleNotifGlobal" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
                     </div>
-                    <div class="toggle-switch">
+                    <div class="toggle-wrapper">
                         <span>Звук при получении сообщений</span>
-                        <input type="checkbox" checked style="width:20px; height:20px;">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggleNotifSound" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
                     </div>
-                    <div class="toggle-switch">
+                    <div class="toggle-wrapper">
                         <span>Вибрация</span>
-                        <input type="checkbox" checked style="width:20px; height:20px;">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggleNotifVibration" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
                     </div>
                 </div>
             </div>
@@ -1036,20 +1123,26 @@
                 <div class="setting-group">
                     <label style="font-weight:bold;">Использование памяти:</label>
                     <div style="background:var(--bg-window); padding:10px; border-radius:8px; border:1px solid var(--border-color); font-size:0.9rem;">
-                        Кэш изображений: <b>1.2 МБ</b><br>
-                        База сообщений: <b>340 КБ</b>
+                        Кэш изображений: <b id="cacheSize">1.2 МБ</b><br>
+                        База сообщений: <b id="dbSize">340 КБ</b>
                     </div>
-                    <button class="action-fast-btn btn-danger" style="margin-top:8px;" onclick="alert('Кэш приложения очищен!')">🧹 Очистить кэш</button>
+                    <button class="action-fast-btn btn-danger" style="margin-top:8px;" id="clearCacheBtn">🧹 Очистить кэш</button>
                 </div>
 
                 <div class="setting-group">
-                    <div class="toggle-switch">
+                    <div class="toggle-wrapper">
                         <span>Автозагрузка медиа (WiFi)</span>
-                        <input type="checkbox" checked style="width:20px; height:20px;">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggleAutoMediaWifi" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
                     </div>
-                    <div class="toggle-switch">
+                    <div class="toggle-wrapper">
                         <span>Автозагрузка медиа (Мобильная сеть)</span>
-                        <input type="checkbox" checked style="width:20px; height:20px;">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggleAutoMediaMobile" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
                     </div>
                 </div>
             </div>
@@ -1065,11 +1158,17 @@
                 <div class="setting-group">
                     <label style="font-weight:bold;">Мои папки:</label>
                     <div style="display:flex; flex-direction:column; gap:6px;">
-                        <div class="settings-item"><span>💬 Личные чаты</span><span class="settings-item-extra">Вкл</span></div>
-                        <div class="settings-item"><span>📢 Общие каналы</span><span class="settings-item-extra">Вкл</span></div>
+                        <div class="settings-item" id="folderPersonal">
+                            <span>💬 Личные чаты</span>
+                            <span class="settings-item-extra" id="folderPersonalStatus">Вкл</span>
+                        </div>
+                        <div class="settings-item" id="folderChannels">
+                            <span>📢 Общие каналы</span>
+                            <span class="settings-item-extra" id="folderChannelsStatus">Вкл</span>
+                        </div>
                     </div>
                 </div>
-                <button class="auth-btn" style="max-width:100%;" onclick="alert('Функция создания пользовательских папок находится в разработке')">➕ Создать новую папку</button>
+                <button class="auth-btn" style="max-width:100%;" id="createFolderBtn">➕ Создать новую папку</button>
             </div>
         </div>
 
@@ -1088,7 +1187,7 @@
                         <div style="font-size:0.75rem; opacity:0.6;">IP: Активное подключение Firebase</div>
                     </div>
                 </div>
-                <button class="auth-btn btn-danger" style="max-width:100%;" onclick="alert('Все остальные сеансы успешно завершены!')">Завершить все другие сеансы</button>
+                <button class="auth-btn btn-danger" style="max-width:100%;" id="endOtherSessionsBtn">Завершить все другие сеансы</button>
             </div>
         </div>
 
@@ -1100,17 +1199,26 @@
             </div>
             <div class="fullscreen-body">
                 <div class="setting-group">
-                    <div class="toggle-switch">
+                    <div class="toggle-wrapper">
                         <span>Режим экономии батареи</span>
-                        <input type="checkbox" style="width:20px; height:20px;">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="togglePowerSave">
+                            <span class="toggle-slider"></span>
+                        </label>
                     </div>
-                    <div class="toggle-switch">
+                    <div class="toggle-wrapper">
                         <span>Отключать анимации стикеров</span>
-                        <input type="checkbox" style="width:20px; height:20px;">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggleStickerAnim">
+                            <span class="toggle-slider"></span>
+                        </label>
                     </div>
-                    <div class="toggle-switch">
+                    <div class="toggle-wrapper">
                         <span>Отключать фоновые спецэффекты</span>
-                        <input type="checkbox" style="width:20px; height:20px;">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggleFxAnim">
+                            <span class="toggle-slider"></span>
+                        </label>
                     </div>
                 </div>
             </div>
@@ -1124,11 +1232,11 @@
             </div>
             <div class="fullscreen-body">
                 <div class="settings-menu-list">
-                    <div class="settings-item" onclick="setLanguage('Русский')">
+                    <div class="settings-item" id="langRuBtn">
                         <span>🇷🇺 Русский</span>
                         <span id="langCheckRu" style="color:#2ec4b6; font-weight:bold;">✓</span>
                     </div>
-                    <div class="settings-item" onclick="setLanguage('English')">
+                    <div class="settings-item" id="langEnBtn">
                         <span>🇬🇧 English</span>
                         <span id="langCheckEn" style="display:none; color:#2ec4b6; font-weight:bold;">✓</span>
                     </div>
@@ -1305,6 +1413,7 @@
         let currentBio = '';
         let currentTheme = 'theme-classic';
         let currentFont = 'font-medium';
+        let userSettings = {};
         let playedGames = [];
 
         let activeChatId = 'global';
@@ -1329,6 +1438,20 @@
         const themeSelect = document.getElementById('themeSelect');
         const fontSelect = document.getElementById('fontSelect');
 
+        // === НАСТРОЙКИ: ФУНКЦИИ СОХРАНЕНИЯ И ПРИМЕНЕНИЯ ===
+
+        // Сохранение всех настроек в Firebase
+        async function saveUserSettings(settings) {
+            if (!currentUser) return;
+            try {
+                await update(ref(database, `users/${currentUser}/settings`), settings);
+                userSettings = { ...userSettings, ...settings };
+            } catch (e) {
+                console.error('Ошибка сохранения настроек:', e);
+            }
+        }
+
+        // Применение визуальных настроек
         function applyVisualSettings(theme, font) {
             currentTheme = theme || 'theme-classic';
             currentFont = font || 'font-medium';
@@ -1337,20 +1460,202 @@
             fontSelect.value = currentFont;
         }
 
+        // Применение всех сохранённых настроек
+        function applyAllSettings(settings) {
+            if (!settings) return;
+            userSettings = settings;
+            
+            // Визуальные
+            if (settings.theme) applyVisualSettings(settings.theme, settings.font);
+            else if (settings.font) applyVisualSettings(currentTheme, settings.font);
+            
+            // Переключатели чатов
+            if (settings.animations !== undefined) {
+                document.getElementById('toggleAnimations').checked = settings.animations;
+            }
+            if (settings.enterSend !== undefined) {
+                document.getElementById('toggleEnterSend').checked = settings.enterSend;
+            }
+            
+            // Конфиденциальность
+            if (settings.twoFA !== undefined) {
+                document.getElementById('toggle2FA').checked = settings.twoFA;
+            }
+            if (settings.appPassword !== undefined) {
+                document.getElementById('toggleAppPassword').checked = settings.appPassword;
+            }
+            if (settings.statusVisibility) {
+                document.getElementById('statusVisibility').value = settings.statusVisibility;
+            }
+            if (settings.dmPermission) {
+                document.getElementById('dmPermission').value = settings.dmPermission;
+            }
+            
+            // Уведомления
+            if (settings.notifPrivate !== undefined) {
+                document.getElementById('toggleNotifPrivate').checked = settings.notifPrivate;
+            }
+            if (settings.notifGlobal !== undefined) {
+                document.getElementById('toggleNotifGlobal').checked = settings.notifGlobal;
+            }
+            if (settings.notifSound !== undefined) {
+                document.getElementById('toggleNotifSound').checked = settings.notifSound;
+            }
+            if (settings.notifVibration !== undefined) {
+                document.getElementById('toggleNotifVibration').checked = settings.notifVibration;
+            }
+            
+            // Данные и память
+            if (settings.autoMediaWifi !== undefined) {
+                document.getElementById('toggleAutoMediaWifi').checked = settings.autoMediaWifi;
+            }
+            if (settings.autoMediaMobile !== undefined) {
+                document.getElementById('toggleAutoMediaMobile').checked = settings.autoMediaMobile;
+            }
+            
+            // Энергосбережение
+            if (settings.powerSave !== undefined) {
+                document.getElementById('togglePowerSave').checked = settings.powerSave;
+            }
+            if (settings.stickerAnim !== undefined) {
+                document.getElementById('toggleStickerAnim').checked = settings.stickerAnim;
+            }
+            if (settings.fxAnim !== undefined) {
+                document.getElementById('toggleFxAnim').checked = settings.fxAnim;
+            }
+            
+            // Папки
+            if (settings.folderPersonal !== undefined) {
+                document.getElementById('folderPersonalStatus').textContent = settings.folderPersonal ? 'Вкл' : 'Выкл';
+            }
+            if (settings.folderChannels !== undefined) {
+                document.getElementById('folderChannelsStatus').textContent = settings.folderChannels ? 'Вкл' : 'Выкл';
+            }
+            
+            // Язык
+            if (settings.language) {
+                setLanguageUI(settings.language);
+            }
+        }
+
+        // === НАСТРОЙКИ: ОБРАБОТЧИКИ ИЗМЕНЕНИЙ ===
+
+        // Тема
         themeSelect.addEventListener('change', async (e) => {
             applyVisualSettings(e.target.value, currentFont);
-            if (currentUser) {
-                await update(ref(database, `users/${currentUser}/settings`), { theme: e.target.value });
-            }
+            await saveUserSettings({ theme: e.target.value });
         });
 
+        // Размер шрифта
         fontSelect.addEventListener('change', async (e) => {
             applyVisualSettings(currentTheme, e.target.value);
-            if (currentUser) {
-                await update(ref(database, `users/${currentUser}/settings`), { font: e.target.value });
+            await saveUserSettings({ font: e.target.value });
+        });
+
+        // Вспомогательная функция для toggle-переключателей
+        function setupToggleHandler(elementId, settingKey, onChange = null) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            el.addEventListener('change', async () => {
+                const value = el.checked;
+                await saveUserSettings({ [settingKey]: value });
+                if (onChange) onChange(value);
+            });
+        }
+
+        // Настройки чатов
+        setupToggleHandler('toggleAnimations', 'animations');
+        setupToggleHandler('toggleEnterSend', 'enterSend');
+
+        // Конфиденциальность
+        setupToggleHandler('toggle2FA', 'twoFA');
+        setupToggleHandler('toggleAppPassword', 'appPassword');
+
+        document.getElementById('statusVisibility').addEventListener('change', async (e) => {
+            await saveUserSettings({ statusVisibility: e.target.value });
+        });
+
+        document.getElementById('dmPermission').addEventListener('change', async (e) => {
+            await saveUserSettings({ dmPermission: e.target.value });
+        });
+
+        // Уведомления
+        setupToggleHandler('toggleNotifPrivate', 'notifPrivate');
+        setupToggleHandler('toggleNotifGlobal', 'notifGlobal');
+        setupToggleHandler('toggleNotifSound', 'notifSound');
+        setupToggleHandler('toggleNotifVibration', 'notifVibration');
+
+        // Данные и память
+        setupToggleHandler('toggleAutoMediaWifi', 'autoMediaWifi');
+        setupToggleHandler('toggleAutoMediaMobile', 'autoMediaMobile');
+
+        // Энергосбережение
+        setupToggleHandler('togglePowerSave', 'powerSave');
+        setupToggleHandler('toggleStickerAnim', 'stickerAnim');
+        setupToggleHandler('toggleFxAnim', 'fxAnim');
+
+        // === ПАПКИ ===
+        document.getElementById('folderPersonal').addEventListener('click', async () => {
+            const status = document.getElementById('folderPersonalStatus');
+            const newVal = status.textContent === 'Вкл' ? false : true;
+            status.textContent = newVal ? 'Вкл' : 'Выкл';
+            await saveUserSettings({ folderPersonal: newVal });
+        });
+
+        document.getElementById('folderChannels').addEventListener('click', async () => {
+            const status = document.getElementById('folderChannelsStatus');
+            const newVal = status.textContent === 'Вкл' ? false : true;
+            status.textContent = newVal ? 'Вкл' : 'Выкл';
+            await saveUserSettings({ folderChannels: newVal });
+        });
+
+        document.getElementById('createFolderBtn').addEventListener('click', () => {
+            const name = prompt('Введите название новой папки:');
+            if (name) {
+                alert(`Папка "${name}" создана! (демо-режим)`);
             }
         });
 
+        // === ЯЗЫК ===
+        function setLanguageUI(lang) {
+            const langTag = document.getElementById('currentLangTag');
+            const ruCheck = document.getElementById('langCheckRu');
+            const enCheck = document.getElementById('langCheckEn');
+
+            if (lang === 'en' || lang === 'English') {
+                langTag.innerText = 'English ❯';
+                ruCheck.style.display = 'none';
+                enCheck.style.display = 'inline';
+            } else {
+                langTag.innerText = 'Русский ❯';
+                ruCheck.style.display = 'inline';
+                enCheck.style.display = 'none';
+            }
+        }
+
+        document.getElementById('langRuBtn').addEventListener('click', async () => {
+            setLanguageUI('ru');
+            await saveUserSettings({ language: 'ru' });
+        });
+
+        document.getElementById('langEnBtn').addEventListener('click', async () => {
+            setLanguageUI('en');
+            await saveUserSettings({ language: 'en' });
+        });
+
+        // === УСТРОЙСТВА ===
+        document.getElementById('endOtherSessionsBtn').addEventListener('click', () => {
+            alert('Все остальные сеансы успешно завершены!');
+        });
+
+        // === ДАННЫЕ И ПАМЯТЬ ===
+        document.getElementById('clearCacheBtn').addEventListener('click', () => {
+            alert('Кэш приложения очищен!');
+            document.getElementById('cacheSize').textContent = '0 МБ';
+            document.getElementById('dbSize').textContent = '0 КБ';
+        });
+
+        // === АВТОРИЗАЦИЯ ===
         function convertFileToBase64(file, maxWidth = 200, maxHeight = 200) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -1477,7 +1782,9 @@
                     document.getElementById('setUsernameInput').value = currentUsernameTag;
                     document.getElementById('setBioInput').value = currentBio;
 
-                    if (data.settings) applyVisualSettings(data.settings.theme, data.settings.font);
+                    if (data.settings) {
+                        applyAllSettings(data.settings);
+                    }
                     if (data.playedGames) playedGames = data.playedGames;
                 }
             });
@@ -1850,7 +2157,7 @@
             }
         });
 
-        // --- УПРАВЛЕНИЕ ПОЛНОЭКРАННЫМИ ОКНАМИ НАСТРОЕК ---
+        // === УПРАВЛЕНИЕ ПОЛНОЭКРАННЫМИ ОКНАМИ НАСТРОЕК ===
         const mainSettingsWindow = document.getElementById('mainSettingsWindow');
 
         function openSubWindow(winId) {
@@ -1870,7 +2177,6 @@
             mainSettingsWindow.classList.remove('active');
         });
 
-        // Назначение перехода для всех дочерних окон
         document.getElementById('openAccountWin').addEventListener('click', () => openSubWindow('accountWindow'));
         document.getElementById('openChatWin').addEventListener('click', () => openSubWindow('chatsWindow'));
         document.getElementById('openPrivacyWin').addEventListener('click', () => openSubWindow('privacyWindow'));
@@ -1887,22 +2193,6 @@
                 if (win) win.classList.remove('active');
             });
         });
-
-        window.setLanguage = function(lang) {
-            const langTag = document.getElementById('currentLangTag');
-            const ruCheck = document.getElementById('langCheckRu');
-            const enCheck = document.getElementById('langCheckEn');
-
-            if (lang === 'English') {
-                langTag.innerText = 'English ❯';
-                ruCheck.style.display = 'none';
-                enCheck.style.display = 'inline';
-            } else {
-                langTag.innerText = 'Русский ❯';
-                ruCheck.style.display = 'inline';
-                enCheck.style.display = 'none';
-            }
-        };
 
         document.getElementById('saveProfileBtn').addEventListener('click', async () => {
             let newUsernameTag = document.getElementById('setUsernameInput').value.trim().replace(/^@/, '');
@@ -1937,6 +2227,7 @@
             closeSubWindow('accountWindow');
         });
 
+        // === СТИКЕРЫ ===
         const stickersPanel = document.getElementById('stickersPanel');
         const stickersGrid = document.getElementById('stickersGrid');
         const packCreateArea = document.getElementById('packCreateArea');
@@ -2008,6 +2299,7 @@
             stickersPanel.classList.remove('active');
         }
 
+        // === ОНЛАЙН МОДАЛКА ===
         const onlineModalOverlay = document.getElementById('onlineModalOverlay');
         const onlineModalList = document.getElementById('onlineModalList');
 
@@ -2058,6 +2350,7 @@
             onlineModalOverlay.classList.remove('active');
         });
 
+        // === СООБЩЕНИЯ: ЛОНГ-ПРЕСС, СВАЙП, РЕДАКТИРОВАНИЕ ===
         function attachLongPressMenu(element, msgData) {
             let pressTimer = null;
 
@@ -2255,6 +2548,11 @@
         function sendDirectMessage(text, stickerData = null) {
             if ((!text && !stickerData) || !currentUser) return;
 
+            // Проверка на Enter
+            if (!userSettings.enterSend && text) {
+                // Если enterSend выключен, отправляем как обычно
+            }
+
             let chatDbPath = 'global_chat';
             if (activeChatId !== 'global') {
                 const pair = [currentUser, activeChatId].sort().join('_');
@@ -2299,6 +2597,7 @@
             set(ref(database, `typing/${activeChatId}/${currentUser}`), false);
         }
 
+        // === ОБРАБОТКА ФОРМЫ ===
         document.getElementById('chatForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const text = userInput.value.trim();
@@ -2306,6 +2605,16 @@
                 sendDirectMessage(text);
                 userInput.value = '';
                 cancelReply();
+            }
+        });
+
+        // Обработка Enter с учётом настройки
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                if (userSettings.enterSend !== false) {
+                    e.preventDefault();
+                    document.getElementById('chatForm').dispatchEvent(new Event('submit'));
+                }
             }
         });
 
@@ -2317,6 +2626,7 @@
 
         document.getElementById('backBtn').addEventListener('click', () => messenger.classList.remove('open-chat'));
 
+        // === ШТОРКА ===
         const drawer = document.getElementById('sidebarDrawer');
         const overlay = document.getElementById('drawerOverlay');
 
@@ -2348,6 +2658,7 @@
             }
         });
 
+        // === ВЫХОД ===
         document.getElementById('logoutBtn').addEventListener('click', async () => {
             if (currentUser) {
                 await set(ref(database, 'status/' + currentUser), { state: 'offline', last_changed: Date.now() });
@@ -2356,6 +2667,7 @@
             location.reload();
         });
 
+        // === ЗАПУСК ===
         if (currentUser) {
             get(ref(database, `users/${currentUser}`)).then((userSnap) => {
                 const userData = userSnap.val() || {};
@@ -2364,10 +2676,10 @@
                 currentAvatar = userData.avatar || '🐱';
                 currentBio = userData.bio || '';
                 const settings = userData.settings || {};
-                applyVisualSettings(settings.theme, settings.font);
+                applyAllSettings(settings);
                 initApp();
             });
         }
     </script>
 </body>
-</html>
+    </html>
